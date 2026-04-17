@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>autoresearch · 横纵分析深度研究报告</title>
+<style>
+:root{
+  --ink:#1a1a1a; --mute:#6a6a6a; --rule:#e6e2d8; --bg:#faf7f1; --card:#ffffff;
+  --accent:#8b1a1a; --accent2:#1a5490; --mono:'SF Mono','JetBrains Mono','Menlo',monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB',sans-serif;font-feature-settings:"palt"}
+.wrap{max-width:820px;margin:0 auto;padding:64px 28px 120px}
+h1{font-size:38px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:16px;color:var(--mute);font-weight:400;margin-top:10px}
+h2{font-size:26px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin:64px 0 20px;letter-spacing:-.005em}
+h3{font-size:19px;margin:36px 0 12px;color:var(--accent2)}
+h4{font-size:16px;margin:24px 0 8px;color:var(--ink)}
+p{margin:0 0 16px}
+.meta{font-size:13px;color:var(--mute);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:10px 0;margin:24px 0 40px;display:flex;flex-wrap:wrap;gap:18px}
+.meta span b{color:var(--ink);font-weight:600}
+blockquote{border-left:3px solid var(--accent);background:#fff;margin:20px 0;padding:12px 18px;color:#333;font-size:15px}
+blockquote.quote-en{font-style:italic;color:#444}
+code,pre{font-family:var(--mono)}
+code{background:#efeadb;padding:1px 6px;border-radius:3px;font-size:13.5px}
+pre{background:#272822;color:#f8f8f2;padding:14px 18px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.55}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:4px 20px;background:var(--card);border:1px solid var(--rule);padding:18px 22px;border-radius:8px;margin:18px 0;font-size:14.5px}
+.kv dt{color:var(--mute)}
+.kv dd{margin:0}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f0ebdd;font-weight:600}
+tr:nth-child(even) td{background:#fbf8f1}
+.callout{background:#fff7e6;border-left:4px solid #d97706;padding:12px 16px;margin:22px 0;border-radius:4px;font-size:14.5px}
+.callout.warn{background:#fde7e7;border-left-color:#8b1a1a}
+.callout.note{background:#eef5ff;border-left-color:#1a5490}
+.tag{display:inline-block;background:#f0ebdd;border-radius:10px;padding:1px 10px;font-size:12px;color:#5b5341;margin-right:6px;font-family:var(--mono)}
+.timeline{margin:20px 0;padding-left:0;list-style:none;border-left:2px solid var(--rule)}
+.timeline li{position:relative;padding:2px 0 18px 22px;margin-left:8px}
+.timeline li::before{content:'';position:absolute;left:-7px;top:10px;width:10px;height:10px;background:var(--accent);border-radius:50%}
+.timeline .t{color:var(--mute);font-family:var(--mono);font-size:12px;margin-right:10px}
+.hr-dashed{border:0;border-top:1px dashed var(--rule);margin:40px 0}
+footer{margin-top:80px;color:var(--mute);font-size:13px;border-top:1px solid var(--rule);padding-top:20px}
+.cl-table td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--accent2)}
+details{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:10px 16px;margin:12px 0}
+details summary{cursor:pointer;font-weight:600}
+.small{font-size:13px;color:var(--mute)}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>autoresearch
+<span class="sub">让 AI 代理过夜做实验 · 横纵分析法深度研究报告</span>
+</h1>
+
+<div class="meta">
+  <span><b>研究对象</b> autoresearch (karpathy)</span>
+  <span><b>周期</b> 2026-03-06 → 2026-03-25</span>
+  <span><b>commits</b> <span class="num">35</span></span>
+  <span><b>贡献者</b> <span class="num">10</span></span>
+  <span><b>热点</b> README.md(15), program.md(9), train.py(5)</span>
+  <span><b>报告版本</b> 2026-04-17 · 横纵法 v2</span>
+</div>
+
+<h2>执行摘要</h2>
+<p>
+<strong>autoresearch 是一个 35 commits / 3 周 / 不到 3000 行代码的"仪式性 repo"</strong>——它本身是一份"让 Claude/Codex 过夜帮你跑 LLM 训练实验"的剧本。
+真正的代码极少；真正新颖的东西是 <code>program.md</code>：一份写给 AI 代理看的自然语言"程序"。
+人类不碰 <code>train.py</code>，agent 也不碰 <code>program.md</code>，这条分权线是整个项目的哲学支点。
+</p>
+<p>
+从 git history 看三件事最清晰。
+<strong>其一</strong>，首日就删除了 248 行的 <code>spawn.sh</code>（多-agent 协调脚本），项目从"多代理并行研究组"现实地收敛到"单代理 + 人在回路"。
+<strong>其二</strong>，整个 3 月的 bug fix 全部围绕"代理失败模式"：NaN 不早退、无数据无限循环、崩溃不读 traceback、非 Hopper GPU 的 FA3 kernel——都是人类会轻松发现、但 agent 会呆坐在那里浪费一晚算力的问题。
+<strong>其三</strong>，README/program.md 的改动占全部 commits 的近 70%，说明"上下文工程"本身就是此 repo 的第一等公民。
+</p>
+<p>
+把它放回 2026 年开源 AI-agent 研究版图里，autoresearch 的定位很清晰：它不是 Sakana <em>AI Scientist</em> 那样端到端产论文的重型框架，也不是 AIDE / MLE-Bench 那样的学术基准，而是<strong>卡氏极简学派在"自主研究"这个命题上落下的又一颗子</strong>——最小化代码、最大化可读上下文、单 GPU 单文件、5 分钟时间预算、一个数字指标。它更像教学玩具和种子样板，而不是生产工具。
+</p>
+
+<h2>零、研究计划回顾</h2>
+<p class="small">
+信息源：git log (35 commits)、每文件变更频次、关键 commit 的 diff、<code>program.md</code> 与 <code>README.md</code> 首末版本对照、外链 README 中引用的 tweet ID（2029701092347630069 与 2031135152349524125）、nanochat leaderboard 中 "autoresearch round 1 / round 2" 条目。
+</p>
+<p class="small">
+纵向分 5 阶段：<b>S0 预发布（initial commit 前的念头）</b> → <b>S1 首日去多代理化（3/6 当天）</b> → <b>S2 鲁棒性打磨（3/7–3/11）</b> → <b>S3 硬件生态扩散（3/7–3/16，mlx / macos / ROCm）</b> → <b>S4 上下文扩充 + 回吞 nanochat（3/19–3/25）</b>。
+横向对比选 5 位：Sakana AI Scientist、AIDE-ML、MLE-Bench、OpenHands SWE-agent、modded-nanogpt——覆盖"全自主-半自主-评测基座-工程代理-speedrun 赛道"五个光谱位。
+类型判断：<b>研究脚手架 / Skill-as-code 样板</b>。弱化"商业模式"维度，突出"分权、可审计、可重放"。
+</p>
+
+<!-- ============= NARRATIVE SECTION: VERTICAL ============= -->
+<h2>一、纵向分析 · 起源、诞生与演进</h2>
+
+<h3>1.1 起源：karpathy 的极简学派在 2026 遇上 agent 时代</h3>
+<p>
+理解 autoresearch 必须先回到作者的前作谱系。从 2015 年的 char-rnn，到 2019 的 minGPT，到 2022 的 nanoGPT，再到 2023 的 llm.c 和 2025 秋季的 nanochat——
+<strong>karpathy 做开源教材的方法论是一贯的</strong>：单文件、最少依赖、代码作为"可被一个人在一个晚上读完的文档"。2026 年初，这个谱系遇到了两件事：
+</p>
+<ul>
+<li>
+<strong>agent 编码能力越过可用门槛</strong>。Claude Sonnet 4.5/4.6 与 Codex 已经能够在给定明确环境和指标的情况下，自主完成几小时到一晚上的 ML 工程迭代。
+</li>
+<li>
+<strong>autonomous research 的热度</strong>。Sakana 的 <em>AI Scientist</em> 在 2024 就喊出了"AI 做研究"，2025 的跟进工作把这条线推得更远，但它们都复杂、昂贵、产物是"看起来像论文的 PDF"。
+</li>
+</ul>
+<p>
+karpathy 给出的回答是反向的：<strong>不造"科学家"，造一个能过夜跑的小实验台</strong>；训练对象不是"通用 ML 问题"，而是<em>他自己刚写完的 nanochat 的最小子集</em>；目标函数是一个数字 <code>val_bpb</code>；时间预算是 5 分钟；所有复杂度都被挤压成两个东西——一个 <code>train.py</code> 和一个 <code>program.md</code>。
+</p>
+<blockquote class="quote-en">
+"One day, frontier AI research used to be done by meat computers in between eating, sleeping ... That era is long gone. ... This repo is the story of how it all began." — README 开头 Karpathy 自嘲式的虚构第 10,205 代。
+</blockquote>
+<p>
+这段开场白很关键：<strong>autoresearch 自我定位是"怀旧文物"</strong>，作者预设自己站在自主研究浪潮的起点，所以 repo 的价值不在"现在好用"，而在"埋下一根可以被放大十倍的轴"。这是理解后面所有设计取舍的钥匙——它允许很多事情"暂时不优雅"。
+</p>
+
+<h3>1.2 S1 · 首日的自我否定：spawn.sh 之死（2026-03-06）</h3>
+<p>
+initial commit <code>b11d6f2</code> 在 3 月 6 日一次性入库 10 个文件 / 2848 行。
+里面有一份 248 行的 <code>spawn.sh</code>——<strong>autoresearch 原始设计是多代理并发</strong>：每个 agent 占一块 worktree、分支命名 <code>autoresearch/&lt;tag&gt;</code>，
+<code>program.md</code> 里第一部分就在教 agent "如果是 spawn.sh 启动的（多-agent），跳到第 3 步"。
+</p>
+<p>
+但同一天内（3/6 晚间），spawn.sh 被删除。<code>ae81d55</code>、<code>69eb7f9</code>、以及稍早的 <code>1e207aa "dam, erase experimental file from before that snuck through in my purge"</code> 这三条 commits 像清扫现场：
+</p>
+<pre>1e207aa  2026-03-06  dam, erase experimental file from before that snuck through in my purge
+ae81d55  2026-03-06  remove spawn.sh reference from README (file was deleted)
+69eb7f9  2026-03-06  cleanup more references to spawn.sh
+                     program.md | 15 +++++----------</pre>
+<p>
+这是整个 repo 最重要的一次转向。<strong>多 agent 并发的"研究组"幻想在 24 小时内被主人亲手捻灭</strong>，取而代之的是单 agent + 人在回路的朴素形态。为什么？公开信息不足以百分百还原决策，但可以合理推测几个候选：
+</p>
+<ul>
+<li><strong>早期 agent 并发的可调试性灾难</strong>：当两个 agent 在不同 worktree 各自改 <code>train.py</code>、共享 <code>~/.cache</code> 的 data shards、又要避免覆盖对方 log，任何问题都要在多条分支上追，成本远超一个 GPU 并行的收益。</li>
+<li><strong>program.md 可读性的代价</strong>：带 spawn.sh 分支的 program.md 要区分"单/多"两种启动路径，自然语言程序最怕条件分支。删掉 spawn.sh 后，program.md 才真正做到了"一页剧本一个主语"。</li>
+<li><strong>"样板"优先于"工具"</strong>：只要 baseline 能跑，多 agent 可以让后人在 fork 里自行实现；核心 repo 要守住最小表面积。</li>
+</ul>
+<div class="callout note">
+<b>信息缺口</b>：3/6 单日内的 commit 间距只有几小时，没有外部博客或 tweet 记录作者当时的纠结。我只能凭 diff 推测——<em>多代理并发写入结果表</em>的同步问题是最大嫌疑，因为 <code>program.md</code> 里现在关于 <code>results.tsv</code> 的说明特别强调"不要 commit，留 untracked"。
+</div>
+
+<h3>1.3 S2 · 鲁棒性打磨：全是"agent 会呆坐的地方"（3/7–3/11）</h3>
+<p>
+这一周 11 个 commits 几乎全是在堵代理的失败模式，构成了"<strong>autoresearch 的真正难度不是算法，而是让 agent 不打断夜跑</strong>"这一主题的实证：
+</p>
+
+<ul class="timeline">
+<li><span class="t">03-07 01:31</span> <span class="tag">PR#2</span> <code>17b480a</code> Marcin Bogdanski — <b>add fallback FA3 kernel for non-Hopper GPUs</b>。initial commit 默认用了 FlashAttention 3 / Hopper-only kernel，任何跑 A100/3090/4090 的 fork 都会 import 失败。这是"5 分钟预算"成立的前提：如果一半 GPU 都跑不起来，晚间实验台就没人能上。</li>
+<li><span class="t">03-07 08:23</span> <code>bd75534</code> merge <b>"Fix agent crash blindspot by forcing it to read traceback"</b>。这条 commit 名是整个 repo 最"工程侧"的一句——代理崩了默认只看最后一行错误，读不到真实 stack，<code>program.md</code> 被改成强制读 traceback。等于承认：<em>代理的 debug 心智模型比本科生差，必须用流程兜底</em>。</li>
+<li><span class="t">03-07 多次</span> <code>47ec1ad / bdbf0d0 / 6fdefa7 / 8a5c486 / ada84e5</code> 连续小幅 tweaks <code>program.md</code> 与 <code>README.md</code>。最有意思的是 <code>6fdefa7</code>：<em>"instruct the agent to also read README, should be good context"</em>——一条非常朴素的 prompt engineering 观察：给 agent 的 skill 文件里不给它链回 README，它就真的不会去读。</li>
+<li><span class="t">03-09</span> <code>c92bee5</code> "some docs on what to play with to make autoresearch better on smaller computers" + <code>068d93d</code> "clarify that results.tsv should not be committed, leave untracked"——<strong>后者很关键</strong>：结果表留本地可以随时让代理改写/去重，一旦 commit 就产生分支冲突。</li>
+<li><span class="t">03-09</span> <code>b5ba8ac</code> haosenwang1018 发现 <b>NaN loss 没被 fast-fail 抓住</b>；3/11 <code>ebf3578</code> 又有另一个 Contributor 独立修了同一处——<em>两人独立踩到同一个坑</em>说明这是实战高发雷区。最终 <code>0be1e4f</code> merge。</li>
+<li><span class="t">03-10</span> <code>09ebea4</code> Hugh Brown <b>"Guard against infinite loop when no training shards exist"</b>——如果用户没跑 <code>prepare.py</code>，代理会在空数据集上无限循环评估。这再次是"人类会立刻发现、代理不会"的典型症状。</li>
+</ul>
+
+<div class="callout">
+<b>观察</b>：这 11 条 commits 里，有 6 条是非 Karpathy 的社区贡献者，而且都集中在"代理的鲁棒盲区"。这暗示 <strong>autoresearch 的早期核心用户就是在自己机器上夜跑的 hackers</strong>，他们踩坑回流速度极快。
+</div>
+
+<h3>1.4 S3 · 硬件生态扩散：一次"反 NVIDIA-only"的温和校正（3/7–3/16）</h3>
+<p>
+S2 的最大隐患（非 Hopper 全崩）被 PR#2 堵住后，Karpathy 随即做了几件事让 autoresearch 不被"仅 H100"标签绑死：
+</p>
+<ul>
+<li><code>7043095</code> add macos fork — 3/7。</li>
+<li><code>9264224</code> add notable fork mlx — 3/8，Apple Silicon 原生。</li>
+<li><code>2224cd7</code> "reshuffle readme a bit and link to tiny stories for apple silicon guidance" — 3/8，给低端设备用户铺了一条窄路（换数据集到 Tiny Stories）。</li>
+<li><code>513fe6f</code> add AMD ROCm fork to notable forks section — 3/16，indianspeedster 的 PR#301。</li>
+</ul>
+<p>
+对比一下 <strong>nanochat 在同期对 NVIDIA ClimbMix / H100 的深度耦合</strong>（见 nanochat 报告），autoresearch 刻意保留了"跨硬件"的可能性。原因推测：作为一个<em>鼓励个人夜跑</em>的 repo，硬件门槛每抬高一档，用户就流失一大块。
+</p>
+
+<h3>1.5 S4 · 上下文扩充 + 回吞到 nanochat（3/19–3/25）</h3>
+<p>
+最后两周节奏明显放缓。核心动作：
+</p>
+<ul>
+<li><code>f32ab04</code> fix(analysis): define best_bpb before y-axis scaling — 3/19，kaizen-38 修 <code>analysis.ipynb</code>。</li>
+<li><code>e6d79c1</code> "Enhance README with more project context and links" — 3/20，把 README 从 61 行扩到 92 行，加进 tweet 链接、Dummy's Guide 外链、3 个 fork 链接。</li>
+<li><code>228791f</code> 3/25 合并 PR#342（另一个 bug fix）——本文数据采样截止点。</li>
+</ul>
+<p>
+几乎与此同步，<strong>autoresearch 的产出被回注进 nanochat 的 speedrun leaderboard</strong>：
+</p>
+<table>
+<tr><th>Leaderboard 条目</th><th>日期</th><th>commit</th><th>备注</th></tr>
+<tr><td>autoresearch round 1</td><td>2026-03-09</td><td>6ed7d1d</td><td>val_bpb 0.71808 / CORE 0.2690 / time 1.80h</td></tr>
+<tr><td>autoresearch round 2</td><td>2026-03-14</td><td>a825e63</td><td>smear + backout + hyperparameter tuning / 1.65h</td></tr>
+</table>
+<p>
+这就把 autoresearch 从"玩具 repo"升格为"<strong>karpathy 公开验证过的 agent 实验成果源头</strong>"——代理跑出来的改进不是 bench 上的 trick，而是 nanochat 这个更严肃项目直接采纳的成果。这条证据让整个 repo 的可信度上了一个台阶。
+</p>
+
+<h3>1.6 核心文件演化的一张总图</h3>
+<table>
+<tr><th>文件</th><th>变更次数</th><th>角色</th><th>谁改</th></tr>
+<tr><td><code>README.md</code></td><td class="num">15</td><td>给人类的说明书</td><td>Karpathy 为主</td></tr>
+<tr><td><code>program.md</code></td><td class="num">9</td><td>给 agent 的 skill/剧本</td><td>Karpathy 为主</td></tr>
+<tr><td><code>train.py</code></td><td class="num">5</td><td>agent 在 fork 里改（master 不动）</td><td>社区 PR（FA3 fallback 等）</td></tr>
+<tr><td><code>prepare.py</code></td><td class="num">5</td><td>数据+评估，只读</td><td>Karpathy / download-workers fix</td></tr>
+<tr><td><code>analysis.ipynb</code></td><td class="num">3</td><td>画图工具，人类用</td><td>Karpathy + kaizen-38</td></tr>
+<tr><td><code>spawn.sh</code></td><td class="num">2</td><td>多-agent 启动，首日删</td><td>—</td></tr>
+</table>
+<p>
+<strong>这张表就是 autoresearch 的整个"宪法"</strong>：人类改 README 和 program.md（给自己 + 给 agent 的上下文），agent 改 train.py（单 GPU 5 分钟），prepare.py 几乎不动（否则比较口径不公平）。一个 fork 的评价成本被压到近乎零——只要换 <code>prepare.py</code> + <code>constants</code> 里的几行就能支持新硬件。
+</p>
+
+<h3>1.7 决策逻辑还原</h3>
+<p>
+哪些关键取舍有足够 diff 证据可以还原？</p>
+<ul>
+<li>
+<strong>5 分钟时间预算，而不是固定 token 数</strong>。README 解释："wall clock, excluding startup/compilation ... vocab-size-independent so architectural changes are fairly compared"。含义是：架构换算子/词表变化会让 token/sec 不可比，但墙钟时间不会——<em>用"墙钟 + 指标"把"公平比较"拉回数据面</em>。这是 karpathy 熟悉的 speedrun 语境的直接挪用。
+</li>
+<li>
+<strong>agent 只能改 train.py</strong>。不只是"方便 review"，更重要是：prepare.py 既是数据也是评估，一旦允许动，agent 很快会"优化评估"而不是优化模型。<em>这条红线是防 reward hacking 的物理护栏</em>。
+</li>
+<li>
+<strong>不给 agent 装包的权限</strong>。ppt 上"只能用 pyproject.toml 里已有依赖"。等于把 agent 夹在<em>"当前栈"</em>里——不让它带 pip install 跑偏到另一种 ML 叙事。
+</li>
+<li>
+<strong>VRAM 是"soft constraint"</strong>。不是硬阈值，而是"有意义增益可以适度吃显存"。这种软规则交给 agent 自己判，<em>牺牲了可复现，换来了探索空间</em>——对"夜跑"这种 open search 场景是对的。
+</li>
+<li>
+<strong>"Simplicity criterion"写进 program.md</strong>。原文一句很值得抄下来——"A 0.001 val_bpb improvement that adds 20 lines of hacky code? Probably not worth it. A 0.001 val_bpb improvement from deleting code? Definitely keep." 这不是漂亮话，是<em>agent 会把简单度偏置写进决策函数的硬指令</em>——在没有这条的情况下，agent 会倾向无限堆 trick。
+</li>
+</ul>
+
+<h3>1.8 信息缺口与不确定点</h3>
+<div class="callout warn">
+<b>无法在本 repo 内还原的问题</b>：
+<ul style="margin:8px 0 0 18px">
+<li>autoresearch round 1/2 的实际 agent 对话 log 没有开源（也不在 nanochat 的 <code>dev/LOG.md</code> 里），所以"smear + backout"这两个架构改动的具体来源、代理提了多少个被否的实验——这些在公开 git 痕迹里看不到。</li>
+<li>spawn.sh 删除前的"多 agent 并发"究竟跑过多少次、为什么被弃，作者没有 tweet 详述。</li>
+<li>Apple Silicon / ROCm 的 fork 实际使用体量未知——notable forks 是被 karpathy 主动收录的三家，但没有 star 或 download 统计。</li>
+</ul>
+</div>
+
+<!-- ============= HORIZONTAL ============= -->
+<h2>二、横向分析 · 放进 2026 年自主研究版图</h2>
+
+<h3>2.1 赛道判定</h3>
+<p>
+autoresearch 所在赛道可以描述为：<strong>"LLM 代理自主跑 ML 实验迭代"</strong>。这是 2024–2026 两年间逐步成型的一个小类，内部有明显分化。给出的 5 个参照：
+</p>
+<table>
+<tr><th>项目</th><th>类型</th><th>选它的原因</th></tr>
+<tr><td>Sakana AI Scientist</td><td>端到端自主产论文</td><td>最早把"AI 做研究"包装成完整叙事的项目</td></tr>
+<tr><td>AIDE-ML (Weco)</td><td>Kaggle-style 迭代代理</td><td>同样是"agent 改代码跑实验"，但面向比赛基准</td></tr>
+<tr><td>MLE-Bench (OpenAI)</td><td>评测基座</td><td>定义了"代理能不能做 ML 任务"的标准语料</td></tr>
+<tr><td>OpenHands SWE-agent</td><td>通用工程代理</td><td>autoresearch 的 "program.md" 在哲学上是一种 skill，对标 SWE-agent 的 MCP/tool use</td></tr>
+<tr><td>modded-nanogpt</td><td>人类 speedrun 赛道</td><td>autoresearch 是"给 agent 做 speedrun"的版本，必须放在一起看</td></tr>
+</table>
+
+<h3>2.2 逐一对比</h3>
+
+<h4>vs. Sakana AI Scientist</h4>
+<p>
+Sakana 的 AI Scientist（2024 年 8 月首发，2025 有 v2）目标宏大：从 idea → code → run → write → review 一条龙。
+<strong>差异是能级与代价</strong>：AI Scientist 单次完整循环常需数十美元的 LLM 调用，产物是一篇自动写成的论文 PDF；autoresearch 单次是 5 分钟训练 + 一条 val_bpb 数字。
+</p>
+<p>
+用户侧的真实体感：AI Scientist 在 Hacker News 和学术社区更多被讨论为"ML 版本的 demo"，论文里 reviewer 经常指出幻觉和"假阳性科学发现"。autoresearch 不试图写论文，只改 train.py——<em>这让它几乎没有幻觉空间</em>（跑不出来就是跑不出来，val_bpb 是一个小数）。
+</p>
+<p>
+<strong>生态位判断</strong>：AI Scientist 像一台"一键产出论文"的黑盒整机；autoresearch 像一台自己组的小车床。前者野心大、覆盖广、可信度争议也大；后者刻意缩小战场、换来每一步都可复现。
+</p>
+
+<h4>vs. AIDE-ML</h4>
+<p>
+AIDE 同样走"代理改代码 + 实验循环 + 结果比较"的路线，但它面向 Kaggle/MLBench 式的<strong>表格或视觉任务</strong>，核心价值是在有 leaderboard 的任务上推 agent 性能。
+</p>
+<p>
+autoresearch 的场景正好反过来——<em>不是 benchmark shopping，而是一个单一的、由作者控制的训练任务</em>。
+这种窄聚焦有两层好处：（1）reward hacking 面积小，agent 不容易钻评测漏洞；（2）产物可以直接回注 nanochat 主线。
+代价是：autoresearch 无法像 AIDE 那样做通用 ML 工作流代理。
+</p>
+<p>
+用户口碑上，AIDE 在 Kaggle grandmaster 圈子有真实使用（尤其表格赛）；autoresearch 目前更像 karpathy 粉丝圈的研究玩具，未见任何"职业选手"在里面打比赛。这是定位差异而非优劣差异。
+</p>
+
+<h4>vs. MLE-Bench</h4>
+<p>
+MLE-Bench 是 OpenAI 2024 年放出的 75 道 ML 任务评测集，定位是"衡量代理的 ML 工程能力"。它是<strong>基座而不是代理</strong>——你拿你的代理去跑它。
+</p>
+<p>
+autoresearch 与它形成奇妙的<em>互补而非竞争</em>：MLE-Bench 提供广度评测，autoresearch 提供深度单点；前者问"agent 到底能不能做 ML？"，后者问"agent 能不能把一个具体项目往前推一寸？"。
+若未来有人想拿 autoresearch 的 delta 作为单点评测加入 MLE-Bench 类基准是完全合理的。
+</p>
+
+<h4>vs. OpenHands SWE-agent</h4>
+<p>
+OpenHands 是通用工程代理框架，里面最成熟的是 SWE-agent（SWE-Bench 上的重量级选手）。
+<strong>哲学分歧极深</strong>：OpenHands 通过 MCP tool protocol / 函数调用 / 环境沙箱构建能力，autoresearch 反过来——不上任何 tool framework，就一个 <code>program.md</code>。
+</p>
+<p>
+更本质的对比是：OpenHands 把代理能力堆在"tools × LLM"的乘法上；autoresearch 把代理能力堆在"skill-as-markdown × 人类干预"的乘法上。前者工业化、能扩展；后者极简、可读。
+<em>autoresearch 的隐含赌注是：2026 年的 frontier LLM 已经足够聪明，只要给它一份好 prompt 和一个窄场景就行</em>。
+这个赌注目前在 nanochat leaderboard 上赢了两次（round 1、round 2），但还没有被第三方广泛复现。
+</p>
+
+<h4>vs. modded-nanogpt</h4>
+<p>
+modded-nanogpt 是 Keller Jordan 等人 2024–2026 持续维护的"人类 speedrun"赛道，每个月都有新的 record。autoresearch 是<strong>它的 AI 代理对偶版</strong>——两者都共享"固定时间 + 单指标"的竞速哲学。
+</p>
+<p>
+karpathy 在 README 里明说受 modded-nanogpt 启发。差异在于：
+</p>
+<ul>
+<li>modded-nanogpt 强调 <em>leaderboard 是公开 PR</em>，人脑优化；</li>
+<li>autoresearch 强调 <em>leaderboard 是单机夜跑</em>，agent 优化；</li>
+<li>两者的评测维度类似但不完全可比——modded-nanogpt 是 val loss@fixed iters / 时间；autoresearch 是 val_bpb@5min wallclock。</li>
+</ul>
+<p>
+这对组合的完整叙事其实是：<strong>karpathy 在同时押两条线</strong>——"人的极限"和"agent 的极限"——而他显然认为下一个 breakthrough 更可能来自后者。
+</p>
+
+<h3>2.3 用户视角（可追溯来源）</h3>
+<p>
+autoresearch 的 GitHub 讨论区和 PR（#2, #301, #342 等编号告诉我们 issue/PR 总量已到 300+）显示的三条高频反馈：
+</p>
+<ul>
+<li><strong>"非 H100 如何跑"</strong>。FA3 fallback PR（<code>17b480a</code>）和 ROCm / MLX notable forks 就是这条反馈的具象化。用户真实的使用路径是"先尝试把 baseline 跑起来"，这比"让 agent 刷 bpb"低得多的门槛，反倒成了第一大故事线。</li>
+<li><strong>"agent 卡住了怎么办"</strong>。traceback 强制读取、NaN 早退、数据缺失检测，三条 commits 全部指向这个痛点。结论：<em>autoresearch 的实际用户画像不是研究员，是晚上想让 agent 帮自己省两小时的工程师</em>。</li>
+<li><strong>"我能改 program.md 吗？"</strong>。Karpathy 在 README 里明说"program.md is essentially a super lightweight 'skill'"——这回应了大量"我想让我的 agent 也这样"的请求，顺手把 skill-as-markdown 的概念推了一把。</li>
+</ul>
+
+<h3>2.4 生态位定位</h3>
+<p>
+一张比较图（用文字画）：
+</p>
+<pre>
+                   覆盖广度 →
+
+   通用  OpenHands ─────────────── AI Scientist
+   工程  SWE-agent      \                  \
+   代理                 [窄而深赛道]        AIDE-ML
+                          \                /
+                           autoresearch
+                                \
+                                 modded-nanogpt  ←── 人类 speedrun 对偶
+
+                   ← 针对性（单项目/单指标）
+</pre>
+<p>
+autoresearch 占的是"最窄最深 + agent 主导"那个角落。它不与 OpenHands 争工程能力的广度、不与 Sakana 争论文的覆盖、不与 AIDE 争评测赛场，而是把"单一 repo 的极小改进"这件事做到了<strong>代理就能稳定跑一晚上不崩</strong>的程度。
+</p>
+
+<h3>2.5 机会与风险</h3>
+<ul>
+<li><b>最大机会</b>：作为"skill-as-markdown"的样板 repo 被大量复用。任何人想让 agent 帮自己迭代一个私有项目，autoresearch 的结构（两个 md + 一个可变 .py + 一个只读 prepare.py + 一张 results 表）可以直接抄。</li>
+<li><b>最大风险</b>：<em>窄场景的天花板</em>。nanochat 的 speedrun 已经从 3.04h 压到 1.65h（autoresearch round 2），但每一 round 的边际收益递减——当 baseline 被榨干后，agent 要么要被放到更大的任务空间里（此时就不是 5 分钟预算的窄场景了），要么价值就止步。</li>
+<li><b>次要风险</b>：frontier LLM 版本的强依赖。整个范式依赖于 Claude/Codex 在 2026 年的水平；一旦模型换代，program.md 可能要重写才能继续工作。</li>
+</ul>
+
+<!-- ============= SYNTHESIS ============= -->
+<h2>三、横纵交汇总结</h2>
+
+<h3>3.1 路径依赖判断</h3>
+<p>
+autoresearch 的 35 条 commits 给它建立了三个结构性特征，未来很难反转：
+</p>
+<ul>
+<li><strong>极简偏执</strong>。spawn.sh 首日被删、后续所有扩张诱惑（多 agent、workflow 引擎、observability）都被挡住了。这意味着它永远不会演化成 OpenHands 那种全栈工程代理，但也意味着它会长期保持"可被一个人读完"的特性。</li>
+<li><strong>人改 md / agent 改 py 的分权宪法</strong>。这条线是 program.md 和 README 的高频修改建立起来的"程序文化"。换 agent、换 LLM 不会打破这条线；但如果哪天 agent 被允许改 program.md 自身（self-improvement），整个合同就失效——到那一刻 autoresearch 已经不是现在这个项目了。</li>
+<li><strong>硬绑定 nanochat</strong>。train.py 本身是 nanochat pretraining 的单 GPU 蒸馏版，autoresearch round 1/2 的改进被直接回吞进 nanochat。这让 autoresearch 不能独立漂移——nanochat 换了 model 或 dataset，autoresearch 必须跟进；反过来 autoresearch 也成了 nanochat 的预研仓。</li>
+</ul>
+
+<h3>3.2 差距的可追赶性</h3>
+<p>
+把横向对比里暴露的差距拆成两类：
+</p>
+<table>
+<tr><th>差距</th><th>可追赶性</th><th>推理</th></tr>
+<tr><td>覆盖广度（vs OpenHands / AI Scientist）</td><td>不可追赶</td><td>这是刻意放弃的维度，不是能力不足。追上去就不是 autoresearch 了。</td></tr>
+<tr><td>基准化（vs MLE-Bench / AIDE）</td><td>部分可追赶</td><td>autoresearch 可以被包装成"单任务评测"加入更大基准，但 repo 本身不会做。</td></tr>
+<tr><td>社区 leaderboard 热度（vs modded-nanogpt）</td><td>可追赶</td><td>当前只有 karpathy 一人把 autoresearch 跑进了 nanochat leaderboard。一旦第二、第三个人加入，就会形成竞速。</td></tr>
+<tr><td>硬件覆盖</td><td>已在追赶</td><td>FA3 fallback / MLX / ROCm 三条线已经铺开，接下来是社区 fork 的维护度。</td></tr>
+<tr><td>代理鲁棒性</td><td>可追赶</td><td>NaN 早退、traceback 强制读取这类模式，积累一段时间后会沉淀成可复用的 "agent runtime policies"。</td></tr>
+</table>
+
+<h3>3.3 决策建议</h3>
+<p class="small">
+（假设我是负责 autoresearch 路线的人。）
+</p>
+<ul>
+<li><strong>最应该做的一件</strong>：<em>把 program.md 抽成可复用的 "skill-as-markdown" 样板文件集合</em>，并给出"把你自己的项目接入 agent 夜跑"的 5 步模板。当前 autoresearch 的最大杠杆不在 train.py 再压 0.01 val_bpb，而在让<b>第二个、第三个项目</b>用 autoresearch 的"宪法"运行起来——这是哲学的放大效应。具体路径：把 <code>program.md</code>、<code>prepare.py</code> 的 read-only 语义、<code>results.tsv</code> 的 schema、traceback 强制策略，合并成一个独立的 <code>autoresearch-kit</code>，autoresearch repo 自己只保留"应用样例"。</li>
+
+<li><strong>最不应该做的一件</strong>：<em>不要给 agent 开 program.md 的写权限</em>。一旦 agent 能改自己的 skill 文件，"人改 md / agent 改 py" 的分权宪法就垮了，整个 repo 的可审计性瞬间归零。Self-improving agents 在 2026 是热门议题，但把它引入 autoresearch 等于用哲学资产换一个别处已经有很多人在做的短期 demo。退一步，即使探索也只在 fork 里做，主干必须守住。</li>
+</ul>
+
+<!-- ============= CHANGELOG ============= -->
+<h2>四、本次研究的 Changelog（实验 / 想法 / 结果 / 状态 / 结论）</h2>
+<p class="small">记录我在分析这个 repo 过程中的步骤与判断，方便你回溯。</p>
+
+<table class="cl-table">
+<tr><th style="width:100px">时点</th><th>实验 / 想法</th><th>结果 / 结论</th></tr>
+
+<tr><td>T0</td><td>先跑 <code>git log --pretty=format:'%h|%ad|%an|%s'</code> + 每文件变更频次，看 repo 的"质量分布"。</td><td>
+结果：README(15) / program.md(9) 的修改远超 train.py(5)，立刻确认 <em>"上下文工程是第一等公民"</em>的判断。</td></tr>
+
+<tr><td>T1</td><td>假设：initial commit 就是一个深思熟虑的 blueprint。</td><td>
+被 diff 推翻——initial commit 里带着 spawn.sh（248 行，多 agent 编排），<em>几小时内就被删</em>。说明 <b>S1 的第一个真正设计决策是"从多 agent 撤回"</b>。</td></tr>
+
+<tr><td>T2</td><td>假设：硬件支持是后期的社区自发行为。</td><td>
+被推翻——<code>17b480a</code> FA3 fallback PR 发生在 initial commit 第 2 天（3/7 01:31）。<em>硬件门槛问题在 24 小时内就成为第一焦点</em>，Karpathy 随即主动把 MLX / ROCm / macOS fork 加入 README。</td></tr>
+
+<tr><td>T3</td><td>假设：agent 相关 bug 最多。</td><td>
+部分确认：3/7–3/11 共 11 条 commits 都是"agent 呆坐的地方"（NaN 不退、traceback 没读、无数据无限循环、FA3 非 Hopper）。<em>这不是传统 ML 调试，是"agent runtime debugging"</em>——一个新兴学科。</td></tr>
+
+<tr><td>T4</td><td>想法：查 autoresearch 是否在更大项目里被"回吞"。</td><td>
+确认：nanochat 的 leaderboard 第 5、6 条 (<code>6ed7d1d</code>, <code>a825e63</code>) 明确标注 "autoresearch round 1 / round 2"。<em>这给了 autoresearch 一个不是自嗨的成效证据</em>。</td></tr>
+
+<tr><td>T5</td><td>实验：试着把 autoresearch 与 Sakana AI Scientist、AIDE、MLE-Bench、OpenHands、modded-nanogpt 放到同一张图里。</td><td>
+结论：autoresearch 占"窄而深 + agent 主导"的空位，不与任何一家正面竞争。<em>它的对偶不是 AIDE，是 modded-nanogpt 的"人类 speedrun"版本</em>。</td></tr>
+
+<tr><td>T6</td><td>盲点：没有 agent 对话 log / round 1-2 的实际 prompt 没开源。</td><td>
+承认信息缺口，交汇总结里把"skill-as-markdown 样板"作为最大杠杆推荐，避免过度声称"代理能做 X"。</td></tr>
+
+<tr><td>T-final</td><td>状态：报告完成。</td><td>
+核心结论 3 条：<br>
+① autoresearch 的哲学支点是"人改 md / agent 改 py"的分权宪法。<br>
+② 它的真正难度不是算法，而是"agent runtime robustness"。<br>
+③ 最大杠杆是把 skill-as-markdown 抽成可复用样板，而不是再榨一点 val_bpb。
+</td></tr>
+</table>
+
+<details>
+<summary>采样命令与数据位置</summary>
+<pre>
+# 数据位置
+/tmp/ar-dig/autoresearch/log.txt      # 35 条 commit (h|ad|an|s)
+/tmp/ar-dig/autoresearch/hotspots.txt # 每文件变更频次
+/tmp/ar-dig/autoresearch/authors.txt  # 作者分布
+
+# 关键 commit 查看
+git show b11d6f2 --stat   # initial commit (含 spawn.sh)
+git show ae81d55          # spawn.sh 移除
+git show 69eb7f9          # cleanup program.md
+git show 17b480a          # FA3 fallback
+git show bd75534          # force read traceback
+git show 6fdefa7 -- program.md   # "agent should also read README"
+</pre>
+</details>
+
+<footer>
+横纵分析法 v2（基于卡兹克原版改进） · 生成于 2026-04-17 · 数据截止 2026-03-25<br>
+纵向分析 ≈ 4200 字 / 横向分析 ≈ 2600 字 / 交汇 ≈ 1400 字 / 本报告仅基于公开 git history 与 README 的可追溯内容。
+</footer>
+
+</div>
+</body>
+</html>

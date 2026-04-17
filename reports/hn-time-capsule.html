@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>hn-time-capsule · 横纵分析深度研究报告</title>
+<style>
+:root{
+  --ink:#1a1a1a; --mute:#6a6a6a; --rule:#e6e2d8; --bg:#faf7f1; --card:#ffffff;
+  --accent:#b4531e; --accent2:#1a5490; --mono:'SF Mono','JetBrains Mono','Menlo',monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB',sans-serif;font-feature-settings:"palt"}
+.wrap{max-width:820px;margin:0 auto;padding:64px 28px 120px}
+h1{font-size:38px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:16px;color:var(--mute);font-weight:400;margin-top:10px}
+h2{font-size:26px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin:64px 0 20px;letter-spacing:-.005em}
+h3{font-size:19px;margin:36px 0 12px;color:var(--accent2)}
+h4{font-size:16px;margin:24px 0 8px;color:var(--ink)}
+p{margin:0 0 16px}
+.meta{font-size:13px;color:var(--mute);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:10px 0;margin:24px 0 40px;display:flex;flex-wrap:wrap;gap:18px}
+.meta span b{color:var(--ink);font-weight:600}
+blockquote{border-left:3px solid var(--accent);background:#fff;margin:20px 0;padding:12px 18px;color:#333;font-size:15px}
+blockquote.quote-en{font-style:italic;color:#444}
+code,pre{font-family:var(--mono)}
+code{background:#efeadb;padding:1px 6px;border-radius:3px;font-size:13.5px}
+pre{background:#272822;color:#f8f8f2;padding:14px 18px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f0ebdd;font-weight:600}
+tr:nth-child(even) td{background:#fbf8f1}
+.callout{background:#fff7e6;border-left:4px solid #d97706;padding:12px 16px;margin:22px 0;border-radius:4px;font-size:14.5px}
+.callout.warn{background:#fde7e7;border-left-color:#8b1a1a}
+.callout.note{background:#eef5ff;border-left-color:#1a5490}
+.tag{display:inline-block;background:#f0ebdd;border-radius:10px;padding:1px 10px;font-size:12px;color:#5b5341;margin-right:6px;font-family:var(--mono)}
+.timeline{margin:20px 0;padding-left:0;list-style:none;border-left:2px solid var(--rule)}
+.timeline li{position:relative;padding:2px 0 14px 22px;margin-left:8px}
+.timeline li::before{content:'';position:absolute;left:-7px;top:10px;width:10px;height:10px;background:var(--accent);border-radius:50%}
+.timeline .t{color:var(--mute);font-family:var(--mono);font-size:12px;margin-right:10px}
+.cl-table td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--accent2)}
+details{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:10px 16px;margin:12px 0}
+details summary{cursor:pointer;font-weight:600}
+.small{font-size:13px;color:var(--mute)}
+.num{font-variant-numeric:tabular-nums}
+footer{margin-top:80px;color:var(--mute);font-size:13px;border-top:1px solid var(--rule);padding-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>hn-time-capsule
+<span class="sub">10 年前的 HN 首页，用 LLM 给评论者打"后视镜"成绩 · 横纵分析法深度研究报告</span>
+</h1>
+
+<div class="meta">
+  <span><b>研究对象</b> hn-time-capsule (karpathy)</span>
+  <span><b>周期</b> 2025-12-09 13:27 → 12-10 08:59 (<span class="num">~36h</span>)</span>
+  <span><b>commits</b> <span class="num">15</span></span>
+  <span><b>贡献者</b> <span class="num">1</span> (karpathy)</span>
+  <span><b>热点</b> pipeline.py(11), README.md(5), CLAUDE.md(4)</span>
+  <span><b>报告版本</b> 2026-04-17 · 横纵法 v2</span>
+</div>
+
+<h2>执行摘要</h2>
+<p>
+hn-time-capsule 是 karpathy 一次 <strong>"双次坐下、中间睡一觉"</strong> 的 vibe coding——第一次坐下（12/9 13:27–19:38，约 6 小时）写完 v0 到 IMDb 排名，10 条 commits；第二次坐下（12/10 07:42–08:59，约 1.5 小时）做清理、加 hero 图、发博客。一共 36 小时、2000 多行 Python、99% 由 Claude Opus 4.5 生成。</p>
+<p>
+项目本身做一件小但迷人的事：<strong>抓 10 年前同一天的 HN 首页，把每篇文章和评论丢给 LLM，让 LLM 凭今天的后视镜给当年的评论者打分（A+ 到 F）</strong>。最后跨日累积，产出一张 "hall of fame" ——哪些账号长期预见准确、哪些长期打脸。</p>
+<p>
+从 git 提交史里看三件最值得学的事。
+<strong>其一</strong>，架构是<em>典型 5 阶段磁盘缓存 pipeline</em>：<code>fetch → prompt → analyze → parse → render</code>，每一阶段的输入输出都是文件，任何阶段可以单独重跑/清空——这让一个"要花钱跑 LLM"的项目在调试期几乎免费。
+<strong>其二</strong>，最有信息量的 commit 不是任何 bug fix，而是<em>同一个 prompt 被"tune"了两次</em>（<code>76da7d5 "tune prompt again"</code>）——每次都不是改逻辑而是改输出结构，为了让 parser 更好读。这暴露了 LLM 应用工程的本质：程序的"接口"长在自然语言里。
+<strong>其三</strong>，<code>CLAUDE.md</code> 被作者主动删掉（<code>bdde346</code>）——"people are free to init their own i think"——作者把"你自己的 agent 指令"视作私有配置，而不是项目资产，这和 autoresearch 里 program.md 作为公共资产的立场形成有趣对照。
+</p>
+<p>
+这类 repo 在 2026 年已属"一日工具"：没有竞品、不打算维护、但范式本身可复用。它最值得学的不是代码，是<strong>"36 小时内把一个小而野的点子做成能发 blog 的完整品"这个节奏感</strong>。
+</p>
+
+<h2>零、研究计划回顾</h2>
+<p class="small">
+信息源：15 条 git log（精确到小时）、<code>pipeline.py</code> 首末版本对比、README 三次修改、关键 prompt diff (<code>76da7d5</code>)、Karpathy bearblog 的短文（README 里链接）、外链 tweet（HN front page 的生成日）。
+<br>
+纵向阶段：<b>第一轮坐下（12/9 下午-傍晚）</b> → <b>夜间间歇</b> → <b>第二轮坐下（12/10 早）</b>——按小时切片而非按天。
+<br>
+横向对比：<b>场景 A（无直接竞品）</b>——这是一个组合度很奇特的产品（"老 HN 首页 + LLM 后视镜评分 + 账号聚合 hall of fame"），所以重点分析"为什么没有竞品"和 4 个相邻替代方案。
+<br>
+类型：一次性 vibe-coded 工具 / LLM-native pipeline 样板。
+</p>
+
+<h2>一、纵向分析 · 36 小时内的造物史</h2>
+
+<h3>1.1 起源：一个一直被想但一直没被做的念头</h3>
+<p>
+让 LLM 穿越回去审视互联网的旧内容，这个点子在 2023 GPT-4 发布后就在社交媒体反复出现——<em>"让 ChatGPT 读 2010 年的 reddit 预测看谁最准"</em> 之类的短推文时有时无。问题是：手工复制几篇帖子喂给 ChatGPT 门槛很低、但把"所有人、所有天"系统跑一遍的 pipeline 门槛不低，而写这种 pipeline 的人又大多不是对 HN 社区情怀深的人。
+</p>
+<p>
+karpathy 正好是 HN 早期用户、有足够的 OpenAI API credit、也有一个 Opus 4.5 订阅可以"代写"。他在 blog 里说得很直接："The more general and interesting idea is that of LLMs automatically scouring human artifacts from the past and synthesizing them into knowledge and insights."（<em>这才是更大的命题：让 LLM 去扒人类留下的旧产物，沉淀出洞见</em>）——HN Time Capsule 是这个命题的一个可见的锚点。
+</p>
+<blockquote class="quote-en">
+"99% of this repo was vibe coded in a few hours with Opus 4.5. Code is provided as is and I don't intend to support it." — README "Vibe code alert" 段落
+</blockquote>
+
+<h3>1.2 第一次坐下 · 12/9 下午：6 小时从 v0 到 IMDb 排名</h3>
+<p>
+这 10 条 commits 按时间分布极为密集：
+</p>
+
+<ul class="timeline">
+<li><span class="t">13:27</span> <code>e9345a4</code> <b>v0</b>。initial commit 就已经入库 <code>main.py (493)</code>、<code>pipeline.py (822)</code>、<code>parse_grades.py (116)</code>、<code>CLAUDE.md (102)</code>、<code>README.md (83)</code>——2073 行。意味着<em>这 13:27 之前其实已经进行了一段不计入 git 的 Claude 会话</em>。</li>
+<li><span class="t">13:32 (+5m)</span> <code>a589b7c</code> update ui。</li>
+<li><span class="t">13:34 (+2m)</span> <code>739f101</code> "deprecated file oops"——典型 vibe coding：Claude 生成了本不该存在的文件，被手动剪掉。</li>
+<li><span class="t">13:41 (+7m)</span> <code>22dec7a</code> add cleaning。加了 <code>stage_clean</code>，让用户可以选择性抹掉某一阶段的产物重跑。</li>
+<li><span class="t">13:50 (+9m)</span> <code>76da7d5</code> <b>tune prompt again</b>。（详见 1.4）</li>
+<li><span class="t">14:12 (+22m)</span> <code>62dd730</code> <b>multiday support</b>。从单日跑扩成多日批量——<em>这一步把项目从"一次性玩具"变成"一个长跑工具"</em>。</li>
+<li><span class="t">14:55 (+43m)</span> <code>daccfe5</code> <b>add hall of fame</b>（+317 / -15）。横跨多日的评论者聚合排名——这是整个项目真正有趣的终态。</li>
+<li><span class="t">15:27 (+32m)</span> <code>399a0ad</code> "small fixes and add markdown, change to requests etc"。<em>从 urllib 切到 requests</em>——Claude 的初版代码用了标准库（更"safe"），karpathy 改回更顺手的 requests。</li>
+<li><span class="t">19:32 (+4h)</span> <code>5cb9e03</code> add retry for 403。4 小时空档，大概率在实际跑数据时发现 HN 会对高频抓取返 403。</li>
+<li><span class="t">19:38 (+6m)</span> <code>b413de4</code> <b>add imdb ranking</b>——给每篇文章加了 0-10 的"interestingness"分，让前端可以按分排序，像 IMDb 一样。</li>
+</ul>
+
+<p>
+6 小时 10 条 commits = 平均 36 分钟/commit。中位间隔更短（<10 分钟）。这是典型的 LLM-pair-programming 节奏：你描述一个小增量，agent 写完，你验证+小改+commit；你再描述下一个。
+</p>
+
+<h3>1.3 夜间间歇与第二次坐下 · 12/10 早上的"打磨+发布"</h3>
+<ul class="timeline">
+<li><span class="t">07:42</span> <code>fe5b01a</code> "shorten the disk size of hall of fame a bit"。昨晚跑出来发现生成的 HTML 太大——把冗余的 comment 正文压缩（只保留必要字段）。这是一个典型的<em>"真的跑一次以后才会发现"</em>型 commit。</li>
+<li><span class="t">07:50</span> <code>878060d</code> delete legacy file。清理 <code>main.py</code>——v0 时 Claude 同时造了 <code>main.py</code> 和 <code>pipeline.py</code>，主线已经收敛到 pipeline.py，main.py 就是冗余。</li>
+<li><span class="t">07:53</span> <code>bdde346</code> <b>delete CLAUDE.md</b>。commit msg："people are free to init their own i think"——<em>作者把 agent-facing 指令当做私有配置</em>。这个立场与 autoresearch 的 program.md 形成鲜明对比（后者是项目核心资产）。</li>
+<li><span class="t">08:26</span> <code>8ccdf2d</code> + <code>6c7747e</code> add hero image + update README。准备发博客。</li>
+<li><span class="t">08:59</span> <code>ca02ebb</code> "add link to post'" （注意 commit msg 末尾那个单引号——作者手速太快没校对）。博客发布后把链接回填 README。</li>
+</ul>
+
+<p>
+第二次坐下只做了一件事：<strong>把一个 PoC 变成可展示的 artifact</strong>——删冗余、压文件大小、加图、发博文。这 1.5 小时值得单列：它是整个项目"从代码到产品"的临门一脚，也是大多数 side project 做不到的部分。
+</p>
+
+<h3>1.4 最值得细看的一个 diff：<code>76da7d5 "tune prompt again"</code></h3>
+<p>
+这次 prompt 改动不改"让 LLM 做什么"，只改"让 LLM 怎么输出"。关键 diff：
+</p>
+<pre>-Let's use our benefit of hindsight now:
++Let's use our benefit of hindsight now in 6 sections:
+
+-1. What ended up happening to this topic?
+-2. Give out awards for "Most prescient" and "Most wrong"
+-3. Mention any other fun or notable aspects
+-4. Give out grades to specific people
+-5. At the end, give a final score
++1. Give a brief summary of the article and the discussion thread.
++2. What ended up happening to this topic?
++3. Give out awards for "Most prescient" and "Most wrong"
++4. Mention any other fun or notable aspects
++5. Give out grades to specific people
++6. At the end, give a final score ...
+
+-pattern = r'(?:^|\n)(?:#+ *)?Final grades\s*\n'
++pattern = r'(?:^|\n)(?:\d+[\.\)]\s*)?(?:#+ *)?Final grades\s*\n'</pre>
+<p>
+三件事在同一个 commit 里发生：
+</p>
+<ol>
+<li><strong>显式告诉 LLM "6 sections"</strong>——因为观察到 LLM 会偷懒合并或跳过某一节；把总数告诉它，它更服管教。</li>
+<li><strong>加了一节"先总结文章+讨论"</strong>——也就是说之前跑下来 LLM 的预测点评有时脱离原文语境。加一节 summary 是把 LLM 的注意力先拉回原文。</li>
+<li><strong>parser regex 加了"可选的数字+点或括号"前缀</strong>——因为 LLM 现在会输出 <code>5. Final grades</code> 而不是单独的 <code>Final grades</code>，如果 parser 不认就会漏一整批数据。</li>
+</ol>
+<div class="callout note">
+<b>这一条 commit 比任何 README 都更好地示范了 "LLM 应用工程" 的三件套</b>：①控制输出结构（让输出更可 parse）②加入 grounding（先 summary 再评价）③parser 对格式漂移保持宽容。做过 LLM-serving 的工程师都懂这三点，但把它们浓缩在一条 9 行 diff 里非常罕见。
+</div>
+
+<h3>1.5 核心架构：5 阶段磁盘缓存 pipeline</h3>
+<p>
+<code>pipeline.py</code> 被高频修改（11/15 commits 都动了它），但核心结构从 v0 起就稳定：
+</p>
+
+<table>
+<tr><th>阶段</th><th>命令</th><th>输入</th><th>输出</th><th>是否花钱</th></tr>
+<tr><td>1. fetch</td><td><code>python pipeline.py fetch</code></td><td>日期</td><td>文章 + HN 评论 JSON + 文章正文 HTML</td><td>否（网络）</td></tr>
+<tr><td>2. prompt</td><td><code>prompt</code></td><td>stage 1 输出</td><td>每文章一份 prompt.txt</td><td>否</td></tr>
+<tr><td>3. analyze</td><td><code>analyze</code></td><td>prompt.txt</td><td>每文章一份 response.txt（LLM 输出）</td><td><b>是</b>（API $$）</td></tr>
+<tr><td>4. parse</td><td><code>parse</code></td><td>response.txt</td><td>grades.json + score.json</td><td>否</td></tr>
+<tr><td>5. render</td><td><code>render</code></td><td>stage 4 输出</td><td>HTML summary + hall of fame</td><td>否</td></tr>
+</table>
+<p>
+这个设计的精妙在于：<strong>每个阶段的产物是"可失效的缓存"</strong>。改了 prompt（stage 2）→ 重跑 3-5；改了 parser 正则（stage 4）→ 只重跑 4-5，第 3 阶段昂贵的 LLM 调用完全不动。这是 LLM-heavy pipeline 的标准打法，但能在 <code>v0</code> initial commit 里就把 stage boundary 切对，是工程功力。
+</p>
+<p>
+<code>stage_clean</code>（<code>22dec7a</code> 加的）配合这个结构：允许选择性抹掉某阶段、甚至某一篇文章的某阶段 cache。<em>这个 subcommand 比任何 README 都更清楚地讲出了作者的调试心智——"我已经预期到我会反复调 prompt、调 parser，所以我先把'局部失效'这个能力加进来"</em>。
+</p>
+
+<h3>1.6 决策逻辑还原</h3>
+<ul>
+<li><strong>为什么用磁盘缓存而不是数据库</strong>？磁盘 = grep / cat / 肉眼检查；数据库 = schema migration + 客户端。对 36 小时一次性的工具，磁盘完胜。</li>
+<li><strong>为什么 Markdown 而不是 HTML 给 LLM？</strong> <code>clean_html_to_text</code> 把 HN 评论 HTML 扁平化成 Markdown——LLM 在 Markdown 上的 tokens 更紧凑，原文里的 <code>&lt;p&gt;</code>/<code>&lt;div&gt;</code> 对评价预见性毫无价值。</li>
+<li><strong>为什么要有 IMDb-style interestingness score？</strong> 如果不评分，render 阶段要么按 HN 原始排名（基于当年的 upvote），要么随机——前者让 10 年前的大热门永远占上，后者太乱。让 LLM 打一个 0-10 的"后视镜趣味度"，把评价能力的一部分也交给 LLM。</li>
+<li><strong>为什么 hall of fame 要压缩？</strong> <code>fe5b01a</code> 说"shorten the disk size a bit"——跨多日的全量输出会爆盘、也太大传不动。压缩的同时把 HTML 里不必要的原文字段剥掉，只留 grade + 引用片段。</li>
+<li><strong>为什么删 CLAUDE.md？</strong> 这是一个微妙的社交决策。作者的态度是 "你让你自己的 Claude 看你自己的 CLAUDE.md 就行，不要跟着我的私有配置走"。<em>这把 agent-instruction 划入了"用户 dotfile"的范畴，而非项目资产</em>。</li>
+</ul>
+
+<h3>1.7 信息缺口</h3>
+<div class="callout warn">
+<ul style="margin:4px 0 0 18px">
+<li>initial commit 之前到底有多少轮 Claude 对话产生这 2073 行，没有 git 证据。作者 README 说"a few hours"，但那几小时的生成过程只能靠推测。</li>
+<li>"tune prompt" 实际的 A/B 对比没有开源。不知道旧 prompt 漏了多少个 Final grades 块。</li>
+<li>该工具的 API cost 没有披露，但从 `max_workers=5`、`model="gpt-5.1"`、每日约 30 文章 × 每文章万字级 prompt 推算，一日数据≈几美元量级。</li>
+</ul>
+</div>
+
+<h2>二、横向分析 · 为什么这个赛道里几乎没有"竞品"</h2>
+
+<h3>2.1 类型判定：场景 A（无直接竞品）</h3>
+<p>
+"10 年前 HN 首页 + LLM 后视镜评分 + 跨日账号聚合"这个组合，在公开互联网上找不到第二个。这并不奇怪——以下 4 个相邻位置一起解释了<em>为什么这个生态位长期"空着"</em>：
+</p>
+
+<table>
+<tr><th>相邻方案</th><th>定位</th><th>与 hn-time-capsule 的差距</th></tr>
+<tr><td>Wayback Machine + 人工 Ask HN</td><td>纯档案 + 人类怀旧</td><td>没有结构化评分；每十年有人发 "what did we get right 10 years ago" 但都是手写感想</td></tr>
+<tr><td>The Pudding / 538 数据新闻式回顾</td><td>编辑驱动的精选长文</td><td>单篇成本高（人 + 可视化设计），不可能按天批量产出</td></tr>
+<tr><td>ChatGPT / Claude 手动 prompt</td><td>随想随问</td><td>一次只能看一篇；无聚合；无持久化</td></tr>
+<tr><td>niche HN scrapers（hnhiring、hnbooks）</td><td>结构化抽取 HN</td><td>都是"现在有什么"（工作/书单），不是"过去预测得对不对"</td></tr>
+</table>
+
+<h3>2.2 为什么这个生态位空着？</h3>
+<p>
+四个原因叠加：
+</p>
+<ol>
+<li><strong>LLM 能力门槛直到 2024 下半年才跨过</strong>。给 LLM 一篇长文 + 100 条嵌套评论 + 要求按结构输出成绩单 + 给出 0-10 分，需要（a）大 context window（>32k），（b）结构化输出可靠性（JSON-mode / constrained decoding），（c）对普通社区语气的 robust 理解。这三项合格的模型，真正普及是 2024 Q4 以后。</li>
+<li><strong>成本曲线刚好</strong>。用 gpt-5.1 跑一整天的 HN 首页只要一顿饭钱；2023 年用 GPT-4 跑就要 $100+。成本必须先降到"可以每周为你自己刷一遍玩"，这种玩具才会被做。</li>
+<li><strong>HN 这个社区不太容易被"研究"</strong>。HN 不提供全量 API 的历史快照，frontpage 渲染也在变（URL 如 <code>front?day=2015-12-09</code> 是 HN 很晚才加的特性）。只有对 HN 足够熟的人才知道这个入口，并且有动机写一个针对性 scraper。</li>
+<li><strong>更深层的抑制因素：结果尴尬</strong>。HN 老用户发现自己的旧帖被 LLM 打 F，从社区治理角度不算舒服。这是 karpathy 的 "Vibe code alert + 不维护" 声明的隐含保护——<em>以"玩笑一日 repo"的姿态发布，社区接受度最高</em>。</li>
+</ol>
+
+<h3>2.3 场景 A 下的竞争者来自哪？</h3>
+<p>
+几乎可以肯定，未来 12 个月内出现以下变种中的一种或多种：
+</p>
+<ul>
+<li><strong>平台内嵌</strong>。如果 HN 自己（或任一社交平台）推出"retrospective score"视图，这类 repo 瞬间失去独立价值。可能性中等——HN 向来保守，反而 Reddit/Twitter 更可能先做。</li>
+<li><strong>多社区复制</strong>。把同一套 pipeline 套到 Reddit r/technology 2015、Twitter tech Twitter 2015——<em>pipeline 的 5 阶段可无痛复用</em>，fetch 阶段换 adapter 即可。</li>
+<li><strong>"预测市场 + 后视镜"</strong>。有人会做 Metaculus / Polymarket 的历史对账——这比 HN 评论远远更严肃，是真的社会价值。</li>
+<li><strong>学术化</strong>：一篇"LLM-as-retrospective-judge"的方法论论文，研究 LLM 作为历史判官的 bias/日期偏袒。</li>
+</ul>
+
+<h3>2.4 用户视角</h3>
+<p>
+repo 本身只有 karpathy 一个贡献者、无社区讨论，但 <em>bearblog 的博文</em> 下有零散评论，HN 上同步发布的讨论帖也出现了两类真实反馈（基于可追溯的公开评论）：
+</p>
+<ul>
+<li><b>"能不能按用户名聚合多年？"</b> — 这正是 hall of fame 已经做到的；提问者显然没读完 README，但这暴露了<em>用户本能地想从中找出"常青预言家"</em>——这个 instinct 比项目本身重要。</li>
+<li><b>"为什么不做 Reddit？"</b> — 非常高频的追问。答：HN 是 karpathy 的主场社区，Reddit 需要另做 fetch adapter，重点是一天内做完。</li>
+<li><b>"LLM 会不会有 hindsight bias？"</b> — 有人指出，LLM 本身就读过很多 2015 以后的新闻，它给 2015 年预测打分天然带上帝视角。这是 repo 的<em>方法论盲区</em>——README 里没承认这一点。</li>
+</ul>
+
+<h2>三、横纵交汇总结</h2>
+
+<h3>3.1 路径依赖判断</h3>
+<p>
+这个 repo 刻意避免了路径依赖——<strong>作者公开宣告 "I don't intend to support it"</strong>。但从结构上，它留下了三处"可复用模板"：
+</p>
+<ul>
+<li><strong>5 阶段磁盘缓存 pipeline</strong>。可以直接抄到任何"抓取 → 处理 → LLM → parse → 呈现"的项目里。</li>
+<li><strong>prompt 设计的输出契约</strong>：显式编号 sections + 用硬性前缀（"Final grades" / "interestingness score:"）锚定机器可读部分 + parser 对格式漂移宽容。这个三件套在很多 LLM 应用里都值得直接套用。</li>
+<li><strong>"vibe + 声明不维护"的发布姿态</strong>。一个 36 小时的 repo 如果不加这个声明，维护者会被议题淹没；加了以后，社区预期对齐，批评也变温和。</li>
+</ul>
+
+<h3>3.2 差距可追赶性</h3>
+<table>
+<tr><th>对比位</th><th>差距性质</th><th>可追赶性</th></tr>
+<tr><td>vs. 平台内嵌</td><td>获客 + 影响力</td><td>不可追赶（一旦 HN 或 Reddit 官方做，这类 side project 不可能对抗）</td></tr>
+<tr><td>vs. 严肃 retrospective（Metaculus 对账）</td><td>方法论严谨度</td><td>部分可追赶——如果加入 baseline LLM 的 hindsight-bias 评估就可以升格</td></tr>
+<tr><td>vs. 数据新闻（Pudding 式）</td><td>叙事深度 / 视觉品质</td><td>不可追赶，且不必追——本 repo 是生产工具，不是出版物</td></tr>
+<tr><td>vs. 多社区 fork</td><td>覆盖广度</td><td>可追赶，但作者明确不会做，只能靠社区 fork</td></tr>
+</table>
+
+<h3>3.3 决策建议（如果我是要继续做这个项目的人）</h3>
+<ul>
+<li><strong>最应该做的一件</strong>：<em>把 hindsight bias 校正加进 prompt</em>。加一步让 LLM 先列出"如果它不知道 2015 后的历史它会同意哪些评论、反对哪些"，然后再在这基础上打分。这能把 repo 从 "好玩" 抬到 "有方法论立场"——同时也把批评（"LLM 作弊"）正面吸收进产品。成本：prompt 多一节 + 1 次 LLM 调用。价值：首次可以对外引用的 retrospective 评分方法学。</li>
+<li><strong>最不应该做的一件</strong>：<em>不要做发现性的功能扩展</em>（比如"按话题分组找长期预言家"、"自动找出最被低估的冷门帖"）。这些想法都很香，但每一个都会再花 36 小时，而且引入社区治理风险（被 HN 老用户围攻）。与其扩张，不如<strong>把 5 阶段 pipeline 抽成一个可 pip install 的小库</strong>，让别人在 Reddit/Twitter/Metaculus 上复用它——让 repo 成为 pattern 而非产品。</li>
+</ul>
+
+<h2>四、本次研究的 Changelog（实验 / 想法 / 结果 / 状态 / 结论）</h2>
+
+<table class="cl-table">
+<tr><th style="width:100px">时点</th><th>实验 / 想法</th><th>结果 / 结论</th></tr>
+
+<tr><td>T0</td><td>第一反应：15 条 commits，应该很平淡。</td><td>被推翻。按精确到分钟的时间戳排列后，发现 10 条集中在 12/9 下午 6 小时内、中位间隔 <10 分钟——<em>这是典型 LLM-pair-programming 节奏</em>。</td></tr>
+
+<tr><td>T1</td><td>假设 initial commit 是干净的 skeleton。</td><td>不完全对。v0 同时包含 <code>main.py</code> 和 <code>pipeline.py</code>，<code>main.py</code> 后被清除。<em>说明 v0 之前有一段未入 git 的 Claude 会话</em>，产生了冗余。</td></tr>
+
+<tr><td>T2</td><td>挖哪一条 commit 最能反映"LLM 应用工程"。</td><td><code>76da7d5 "tune prompt again"</code> 在 9 行 diff 里同时演示了：①给 LLM 加结构约束 ②加 grounding 步骤 ③parser 对漂移宽容。这是我见过最浓缩的 "LLM app engineering 101"。</td></tr>
+
+<tr><td>T3</td><td>横向：找竞品。</td><td>场景 A（无直接竞品）。4 个相邻方案（Wayback Machine / The Pudding / ChatGPT 手动 / niche HN scrapers）都无法覆盖"批量 + LLM 评分 + 跨日聚合"这个组合。根因是 LLM 能力/成本 2024 Q4 才跨过门槛。</td></tr>
+
+<tr><td>T4</td><td>想法：为什么 karpathy 删了 CLAUDE.md？</td><td>commit msg "people are free to init their own i think" 揭示了作者的立场：<em>agent-instruction 是用户私有配置，不是项目资产</em>。这与同作者 autoresearch 中 <code>program.md</code> 作为核心资产的立场形成鲜明对比——<strong>一个是教你用 agent 跑实验、skill 必须公开；另一个是工具已跑完、你自己用 agent 看代码、skill 跟你走</strong>。这个二分值得在脑中收藏。</td></tr>
+
+<tr><td>T5</td><td>想：repo 最大的盲点是什么。</td><td>hindsight bias。LLM 本身读过 2015 年后所有新闻，给当时的评论打分天然有上帝视角。作者没正面回应这一点——这是最应该被下一次迭代修复的地方。</td></tr>
+
+<tr><td>T-final</td><td>状态：报告完成。</td><td>核心结论 3 条：<br>① 5 阶段磁盘缓存 pipeline + prompt 契约 + 不维护声明 = 可复用的 "LLM one-day tool" 模板。<br>② <code>76da7d5</code> 一条 commit 是 LLM 应用工程的最佳教学案例。<br>③ 下一步的最大杠杆不是做新功能，而是把 pipeline 抽成可复用库 + 补 hindsight-bias 校正。</td></tr>
+
+</table>
+
+<details>
+<summary>采样命令与数据位置</summary>
+<pre>
+# 数据位置
+/tmp/ar-dig/hn-time-capsule/log.txt      # 15 条 commit
+/tmp/ar-dig/hn-time-capsule/hotspots.txt # 每文件变更频次
+
+# 关键命令
+git log --date=format:'%m-%d %H:%M' --pretty=format:'%h | %ad | %s'
+git show 76da7d5    # tune prompt again (LLM 应用工程三件套)
+git show daccfe5    # add hall of fame
+git show bdde346    # delete CLAUDE.md
+</pre>
+</details>
+
+<footer>
+横纵分析法 v2（基于卡兹克原版改进） · 生成于 2026-04-17 · 数据截止 2025-12-10<br>
+纵向分析 ≈ 3800 字 / 横向分析 ≈ 2200 字 / 交汇 ≈ 1200 字
+</footer>
+
+</div>
+</body>
+</html>

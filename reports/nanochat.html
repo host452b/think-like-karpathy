@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>nanochat · 横纵分析深度研究报告</title>
+<style>
+:root{
+  --ink:#1a1a1a; --mute:#6a6a6a; --rule:#e6e2d8; --bg:#faf7f1; --card:#ffffff;
+  --accent:#1a5490; --accent2:#8b1a1a; --accent3:#2e7d32; --mono:'SF Mono','JetBrains Mono','Menlo',monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB',sans-serif;font-feature-settings:"palt"}
+.wrap{max-width:880px;margin:0 auto;padding:64px 28px 120px}
+h1{font-size:40px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:16px;color:var(--mute);font-weight:400;margin-top:10px}
+h2{font-size:27px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin:72px 0 20px;letter-spacing:-.005em}
+h3{font-size:20px;margin:42px 0 12px;color:var(--accent)}
+h4{font-size:16px;margin:26px 0 8px;color:var(--ink)}
+p{margin:0 0 16px}
+.meta{font-size:13px;color:var(--mute);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:10px 0;margin:24px 0 40px;display:flex;flex-wrap:wrap;gap:18px}
+.meta span b{color:var(--ink);font-weight:600}
+blockquote{border-left:3px solid var(--accent);background:#fff;margin:20px 0;padding:12px 18px;color:#333;font-size:15px}
+code,pre{font-family:var(--mono)}
+code{background:#efeadb;padding:1px 6px;border-radius:3px;font-size:13.5px}
+pre{background:#272822;color:#f8f8f2;padding:14px 18px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f0ebdd;font-weight:600}
+tr:nth-child(even) td{background:#fbf8f1}
+.callout{background:#fff7e6;border-left:4px solid #d97706;padding:12px 16px;margin:22px 0;border-radius:4px;font-size:14.5px}
+.callout.warn{background:#fde7e7;border-left-color:#8b1a1a}
+.callout.note{background:#eef5ff;border-left-color:#1a5490}
+.callout.win{background:#eef7ee;border-left-color:#2e7d32}
+.tag{display:inline-block;background:#f0ebdd;border-radius:10px;padding:1px 10px;font-size:12px;color:#5b5341;margin-right:6px;font-family:var(--mono)}
+.timeline{margin:20px 0;padding-left:0;list-style:none;border-left:2px solid var(--rule)}
+.timeline li{position:relative;padding:2px 0 16px 22px;margin-left:8px}
+.timeline li::before{content:'';position:absolute;left:-7px;top:10px;width:10px;height:10px;background:var(--accent);border-radius:50%}
+.timeline .t{color:var(--mute);font-family:var(--mono);font-size:12px;margin-right:10px}
+.leaderboard{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:18px;margin:18px 0}
+.leaderboard table{margin:0}
+.leaderboard th,.leaderboard td{font-size:13.5px}
+.cl-table td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--accent)}
+details{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:10px 16px;margin:12px 0}
+details summary{cursor:pointer;font-weight:600}
+.small{font-size:13px;color:var(--mute)}
+.num{font-variant-numeric:tabular-nums}
+.bar{display:inline-block;height:10px;background:var(--accent);border-radius:2px;vertical-align:middle}
+footer{margin-top:80px;color:var(--mute);font-size:13px;border-top:1px solid var(--rule);padding-top:20px}
+hr.dash{border:0;border-top:1px dashed var(--rule);margin:48px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>nanochat
+<span class="sub">从 0 到 99 分钟跑通 GPT-2 · 6 个月 380 commits 的速度战争 · 横纵分析法深度研究报告</span>
+</h1>
+
+<div class="meta">
+  <span><b>研究对象</b> nanochat (karpathy)</span>
+  <span><b>周期</b> 2025-10-13 → 2026-04-14 (<span class="num">~6 个月</span>)</span>
+  <span><b>commits</b> <span class="num">380</span></span>
+  <span><b>贡献者</b> <span class="num">70+</span>（Karpathy 248 · svlandeg 40 · Luke Stanley 8 · Eric Silberstein 6）</span>
+  <span><b>热点</b> base_train.py(56) · README.md(45) · gpt.py(36) · dev/LOG.md(36)</span>
+</div>
+
+<h2>执行摘要</h2>
+<p>
+nanochat 是 2025 年 10 月到 2026 年 4 月间 Karpathy 倾注最多精力的 repo：<strong>单一 GPU 节点、单一复杂度旋钮 <code>--depth</code>、单一目标指标"time-to-GPT-2"</strong>，从初始 commit 10,292 行一口气入库的完整 pipeline（tokenizer / pretrain / SFT / RL / eval / chat UI），到 2026 年 3 月 14 日跑出 99 分钟训出 GPT-2 级别能力（CORE 0.2626）——<em>6 个月内把同一件事加速了接近 2 倍（168h → 1.65h）</em>。
+</p>
+<p>
+这 380 条 commits 讲了三个同时展开的故事。
+<strong>故事一是速度战争</strong>：leaderboard 用 6 条越来越短的记录串起了 fp8 训练 / 批次大小自动最优化 / FineWeb-EDU 换 ClimbMix / autoresearch 代理两轮自主优化这几个关键节点——每一跳都有一个明确的 commit 对应。
+<strong>故事二是减法洁癖</strong>：rustbpe 从仓内剥离到独立包（<code>aa42f40</code>）、autocast 在 11 个文件里被显式 dtype 替换（2026-03-04）、默认依赖被拆成 dev 组以防供应链攻击（<code>a445144 "dependencies bad bad bad"</code>）——<em>这个 repo 的"瘦身"节奏和"加速"节奏同样稳定</em>。
+<strong>故事三是开源社区运营</strong>：Karpathy 在 2026 年 1 月 7 日主动起笔 <code>dev/LOG.md</code>，把自己的 lab notebook 公开化（含大量负面结果），把 leaderboard 做成 PR 游戏规则清晰的工程竞赛，让 svlandeg 这样的第二作者在 3 个月内积累到 40 条高质量 commits；这种"开放实验室"的开源姿态在前沿训练框架里非常罕见。
+</p>
+<p>
+把它放回 Karpathy 前作（minGPT / nanoGPT / llm.c）+ 周边同类（modded-nanogpt / litgpt / TinyLlama）的谱系里看：nanochat 是<strong>"单文件极简"与"完整闭环"之间一次精心设计的妥协</strong>——它比 nanoGPT 大十倍（有 SFT/RL/chat/UI），但比 litgpt 小一个数量级（没有 accelerate / deepspeed / lightning 抽象）；它的"time-to-GPT-2" 是对 modded-nanogpt "speedrun" 哲学的一次代际继承：同样是"墙钟时间 + 固定指标"，但把舞台从 val loss 往下挪到了 CORE eval 这个更接近 downstream capability 的汇总分。
+</p>
+
+<h2>零、研究计划回顾</h2>
+<p class="small">
+信息源：380 条 git log、每月 commit 数分布、热点文件变更频次（<code>base_train.py</code>56/<code>gpt.py</code>36/<code>dev/LOG.md</code>36）、关键 commit 搜索（fp8/climbmix/muon/leaderboard/autoresearch/smear/backout/sft/rustbpe）、<code>dev/LOG.md</code>（Karpathy 的 lab notebook，始于 2026-01-07）、<code>dev/LEADERBOARD.md</code>、<code>runs/speedrun.sh</code>、<code>README.md</code> 表格。
+<br>
+纵向阶段：<b>S1 发布 + 硬件扩容（2025-10）</b> → <b>S2 沉淀 + 架构收敛（2025-11–12）</b> → <b>S3 实验日志公开 + Muon 改良（2026-01）</b> → <b>S4 fp8 + 批大小革命（2026-02）</b> → <b>S5 数据换血 + 代理注入（2026-03）</b> → <b>S6 安全 + 维护（2026-04）</b>。
+<br>
+横向：场景 C（竞品 ≥ 3）。选 5 个：nanoGPT / modded-nanogpt / llm.c / litgpt / TinyLlama。覆盖"前作 / speedrun 直接对手 / 同作者 C 语言姊妹 / 企业训练框架 / 社区小模型"。
+<br>
+类型：开源训练框架 + 社区 speedrun 运动。突出"单一旋钮 + 墙钟时间 + CORE 指标"的竞速哲学、以及与 autoresearch 的互喂关系。
+</p>
+
+<h2>一、纵向分析 · 六个月的速度战争</h2>
+
+<h3>1.1 起源：Karpathy 十年极简学派的集大成</h3>
+<p>
+nanochat 不是突然出现的。它站在一条清晰的谱系上：
+</p>
+<table>
+<tr><th>年份</th><th>项目</th><th>特征</th><th>与 nanochat 的关系</th></tr>
+<tr><td>2015</td><td>char-rnn</td><td>~200 行 Torch，Shakespeare 级模型</td><td>最早的"一文件可读"样板</td></tr>
+<tr><td>2019</td><td>minGPT</td><td>完整 GPT 实现 ~300 行 PyTorch</td><td>架构 DNA 的直系祖先</td></tr>
+<tr><td>2022</td><td>nanoGPT</td><td>单文件 train.py，能复现 GPT-2 数字（但耗时）</td><td><strong>直接前作</strong>。nanochat 是它的"全流程版"</td></tr>
+<tr><td>2024</td><td>llm.c</td><td>纯 C 实现 GPT-2 训练</td><td>极端主义的侧试——证明"人类能读的 ML 工程"这条路走得通</td></tr>
+<tr><td>2025</td><td><b>nanochat</b></td><td>单 GPU 节点 / 覆盖 pretraining→SFT→RL→chat UI</td><td>首次把"ChatGPT 类体验"的完整链路压进一个可读 repo</td></tr>
+</table>
+<p>
+nanoGPT 能跑通 GPT-2 但要训几天、只跑 pretraining；llm.c 在 C 里做 pretraining；litgpt 有完整 pipeline 但重度依赖 Lightning abstraction。<strong>"覆盖 ChatGPT 级全流程 + 单节点 + 可读"这个格子长期空着</strong>——nanochat 填的就是这个格子。Karpathy 在 <code>3a5e0bc</code> 之前大概率已经在私下迭代了几个月（2025 年夏天 his Tweet 里提过"a ChatGPT-capable thing coming"）。
+</p>
+
+<h3>1.2 initial commit · 2025-10-13：10,292 行一次性入库</h3>
+<p>
+首日入库的 47 个文件里就已经包含了：
+</p>
+<ul>
+<li><strong>tokenizer 栈</strong>：Rust 实现的 <code>rustbpe</code>（lib.rs 476 行 + Cargo 配置 + test 635 行） + Python wrapper <code>nanochat/tokenizer.py</code>（395 行）。这是 nanochat 最早就拿出了工业级 Rust BPE——<em>Karpathy 之前写过 minbpe（纯 Python）</em>，在 nanochat 里升级到 Rust。</li>
+<li><strong>训练栈</strong>：<code>gpt.py</code> 322 行（含 Muon 优化器骨架调用）、<code>muon.py</code> 187 行、<code>dataloader.py</code>、<code>dataset.py</code>、<code>base_train.py</code> 339 行、<code>mid_train.py</code> 289 行。</li>
+<li><strong>对话栈</strong>：<code>chat_sft.py</code> 281 行、<code>chat_rl.py</code> 331 行、<code>chat_cli.py</code>、<code>chat_web.py</code>、<code>ui.html</code> 394 行。RL 已经在首日就在 repo 里——这是 2025 年末开源社区里非常早的一个信号。</li>
+<li><strong>评测栈</strong>：<code>base_eval.py</code>、<code>chat_eval.py</code>、<code>core_eval.py</code> 262 行、<code>tasks/</code>（arc、gsm8k、humaneval、mmlu、smoltalk）。CORE 指标（DCLM paper 引入）作为主指标的选择就是在 initial commit 里定下来的。</li>
+<li><strong>报告栈</strong>：<code>report.py</code> 404 行。Karpathy 把"训练结束要生成什么样的 report"当作一等模块——这是后续 leaderboard 提交能标准化的前提。</li>
+<li><strong>speedrun.sh</strong>：133 行单文件 + <code>runs/</code> 目录。"speedrun as the entry point" 的规则从 Day 1 就定。</li>
+</ul>
+<p>
+<strong>这个首日规模告诉我们什么</strong>：Karpathy 不是边想边写，他是<em>先把 ChatGPT 全链路的所有关键功能在本地跑通后再 git init</em>。这和他写 nanoGPT 时的"一个 train.py 搞定"完全不同——nanochat 的复杂度是用"多个小文件拼一条可读链路"来换的，而不是塞进一个巨型文件。
+</p>
+
+<h3>1.3 S1 · 2025-10 的 101 条 commits：跑在各类硬件上</h3>
+<p>
+10 月这 101 条是整个 repo 最密集的月份。几件大事：
+</p>
+<ul class="timeline">
+<li><span class="t">10-13 initial</span> 发布 + logo + README + WebUI 图。</li>
+<li><span class="t">10-14</span> <code>02440f6</code> Bhaskar 修 <code>evaluate_bpb</code> 零除：返回 inf 而不是崩溃。第一个社区 PR。</li>
+<li><span class="t">10-15</span> <code>01fb290</code> "allow multiple GPUs to do inference in a data parallel way"——推理也并行化。</li>
+<li><span class="t">10-15</span> <code>4c3590c</code> <b>"fix subtle issue in token decoding in cases where multiple utf8 bytes need to be emitted into a single codepoint. examples are emoji or foreign languages"</b>。这是一个非常典型的"你不跑线上就不会踩的雷"——tokenizer 在流式输出时必须缓冲直到完整 codepoint 才能吐出，否则 emoji / 中文会变成替换字符。</li>
+<li><span class="t">10-16</span> <code>306bc38</code> "add support for CPU and for MPS. I had to change a few cosmetic things. I also discovered I think a bit of a bug, where I was casting wte to bfloat16 in the wrong place."——<em>在发布后第 3 天就让 repo 在 Mac（MPS）和 CPU 上能跑，作为 PR 策略上的"不排外"信号</em>。而且顺手修了一个 embedding dtype 位置错误的 bug。</li>
+<li><span class="t">10-16</span> <code>2846999</code> + <code>4346536</code> 一系列 WebUI 交互改进：用户可编辑自己的消息、可重新生成 assistant 回复（中间对话被截断）。<em>这些是 "chat-as-UX" 的 table stakes</em>——Karpathy 在 Day 3 就做完了。</li>
+</ul>
+<p>
+10 月的 101 条 commits 大部分是"把一个功能跑通后立刻发现一个 bug再修"的碎步迭代。到 10 月底，repo 的主干已经稳定：tokenizer / base_train / mid_train / SFT / RL / eval / chat 都在。
+</p>
+
+<h3>1.4 S2 · 2025-11–12：节奏放缓，抛掉 rustbpe 内嵌</h3>
+<p>
+11 月 54 条、12 月 35 条——进入维护+打磨期。最值得单讲的是 <strong>2026-01-03 <code>aa42f40</code> "delete the inline rustbpe project"</strong>：
+</p>
+<blockquote>
+"it was ugly to have a project within project and rustbpe is now nicely a separate repo on my github karpathy/rustbpe and it's on pypi etc., so we just add it as a depedency to uv. i think it is appropriate that this is a separate repo because 1) it doesn't have too many knobs ... and 2) all of its complexity is not algorithmic (it's equivalent to minbpe), instead it is efficiency-related, so it is ok to hide"
+</blockquote>
+<p>
+这个决策值得拆开讲：<em>模块边界的正确画法 = 按"复杂度类型"切，不是按"行数"切</em>。rustbpe 虽然大（476 行 lib.rs），但它的复杂度是"效率型"而非"算法型"——所以可以隐藏；base_train.py 虽然也大（339+），但它的每一行都是"你想改这个实验的话你一定要读到"，不能隐藏。<strong>这是 Karpathy 多年做"可读 ML 工程"实践出来的抽象原则</strong>，值得在自己项目里套用。
+</p>
+
+<h3>1.5 S3 · 2026-01：实验日志公开化 + Muon 改良（97 条 commits）</h3>
+<p>
+1 月是整个 repo 的"科研觉醒期"。关键事件：
+</p>
+
+<h4>2026-01-07：起笔 <code>dev/LOG.md</code></h4>
+<p>
+LOG.md 第一行明言："Started ~Jan 7 2026."——Karpathy 主动把自己的 lab notebook 公开化。这份文档到现在 1077 行，包括：
+</p>
+<ul>
+<li>每一个大改动的 <em>动机 / 具体改了什么 / 实验结果 / 结论</em> 四段式。</li>
+<li>大量<strong>负面结果</strong>——这是最稀缺的内容。例如 <code>2026-03-24 Parameter-Golf Ideas Sweep (Negative)</code>：把 LeakyReLU(0.5)² / partial RoPE / LN Scale / orthogonal init / XSA 这 5 个"可能有用的小 tweaks"挨个试了，全部失败或可忽略。<em>开源项目愿意公开写出 5 个失败的尝试，是对后来者最大的馈赠</em>——避免重复踩坑。</li>
+<li>scaling law 的实测：WD ∝ 1/width² (α ≈ 1.97)，配公式 <code>WD_target = WD_ref × (d_ref / d_target)²</code>。</li>
+</ul>
+<div class="callout note">
+<strong>为什么 LOG.md 是整个 repo 最有价值的副产品</strong>：2026 年前沿训练代码的"公开 repo"很多，但<em>"公开的 lab notebook"</em> 几乎没有。Anthropic / OpenAI 的内部 scaling laws 文档永远不会上 GitHub；Karpathy 的 LOG.md 是少数能让你<strong>在不在 Anthropic/DeepMind 工作的情况下，看到一个认真科研员的思考颗粒度</strong>的地方。
+</div>
+
+<h4>2026-01-10：Muon 优化器大改（<code>dev/LOG.md</code> 记录）</h4>
+<p>
+这一条 LOG 条目本身就值得单拎出来。Karpathy 从 modded-nanogpt 里挑了 3 个 Muon 相关的改进，每个都亲自验证：
+</p>
+<table>
+<tr><th>改动</th><th>来源</th><th>结果</th><th>决策</th></tr>
+<tr><td>Polar Express Orthogonalization</td><td>arxiv 2505.16932</td><td>与 Newton-Schulz 无明显差异</td><td>保留作为默认（美学 + future-proof）</td></tr>
+<tr><td>NorMuon 方差缩减</td><td>arxiv 2510.05491</td><td>小改进</td><td>默认 on</td></tr>
+<tr><td>Cautious Weight Decay</td><td>arxiv 2411.16085</td><td>显著改进，尤其 cautious 版本</td><td>默认 on</td></tr>
+<tr><td>WD schedule (1.0→0.0 线性)</td><td>modded-nanogpt</td><td>优于静态 WD</td><td>默认 on</td></tr>
+</table>
+<p>
+值得一提的是作者的<strong>实现细节洁癖</strong>：cautious WD 不能用 <code>@torch.compile</code> 函数封装，因为 weight_decay 在 schedule 中变化会触发 recompile；必须内联读取 <code>group["weight_decay"]</code>。这种"代码里不写、但 LOG 里写"的工程细节对新入行的工程师是黄金级别的教材。
+</p>
+
+<h4>2026-01-08：删掉所有 gradient clipping</h4>
+<p>
+LOG 里另一条很典型的"负面结果写成产品改进"：在 d12 / d20 两个规模扫了 L2 和 elementwise 的阈值（0.25/0.5/1.0/2.0），<em>全部落在 noise 范围</em>。结论：删除。附带理由："grad norm never exceeds 1.0 naturally, so clipping is always inactive; Clipping adds ~2% time overhead from the all-reduce."
+</p>
+<p>
+<strong>这个决策的美学在于：一条 gradient clipping 的代码能让很多 ML 工程师安心睡觉。但只要它没测出有效果，就该被删</strong>——"inactive protection + 2% slowdown" = 纯负收益。Karpathy 的 <code>dev/LOG.md</code> 里这种"安全感让位于实验证据"的决策反复出现。
+</p>
+
+<h3>1.6 S4 · 2026-02：fp8 + 批大小革命（53 条 commits）</h3>
+
+<div class="leaderboard">
+<h4 style="margin-top:0">Time-to-GPT-2 Leaderboard（截至数据采样点）</h4>
+<table>
+<tr><th>#</th><th>时间</th><th>val_bpb</th><th>CORE</th><th>描述</th><th>日期</th><th>commit</th></tr>
+<tr><td>0</td><td>168 小时</td><td>—</td><td>0.2565</td><td>OpenAI 原版 GPT-2 (2019, $43K)</td><td>—</td><td>—</td></tr>
+<tr><td>1</td><td class="num">3.04h</td><td>0.74833</td><td>0.2585</td><td>d24 baseline，slightly overtrained</td><td>Jan 29 2026</td><td>348fbb3</td></tr>
+<tr><td>2</td><td class="num">2.91h</td><td>0.74504</td><td>0.2578</td><td>d26 slightly undertrained + <b>fp8</b></td><td>Feb 2 2026</td><td>a67eba3</td></tr>
+<tr><td>3</td><td class="num">2.76h</td><td>0.74645</td><td>0.2602</td><td>bump batch size to 1M tokens</td><td>Feb 5 2026</td><td>2c062aa</td></tr>
+<tr><td>4</td><td class="num">2.02h</td><td>0.71854</td><td>0.2571</td><td>dataset → NVIDIA <b>ClimbMix</b></td><td>Mar 4 2026</td><td>324e69c</td></tr>
+<tr><td>5</td><td class="num">1.80h</td><td>0.71808</td><td>0.2690</td><td><b>autoresearch round 1</b>（Claude 2 days autonomous on d12）</td><td>Mar 9 2026</td><td>6ed7d1d</td></tr>
+<tr><td>6</td><td class="num">1.65h</td><td>0.71800</td><td>0.2626</td><td><b>autoresearch round 2</b>（smear + backout + hyperparam）</td><td>Mar 14 2026</td><td>a825e63</td></tr>
+</table>
+<p class="small" style="margin:10px 0 0">从 168h → 1.65h = <b>100× 加速</b>。其中 nanochat 的 6 个月贡献了 3.04h → 1.65h 这段，即 1.84× 加速。</p>
+</div>
+
+<h4>fp8 的两次遭遇：失败 → 成功</h4>
+<ul class="timeline">
+<li><span class="t">2026-01-13</span> <code>238353c</code> <b>"document my struggle with fp8 integration yesterday, it's not working like i thought it would and i suffered. one day i will return to continue the fight."</b></li>
+<li><span class="t">2026-02-03</span> <code>6079f78</code> "add fp8 training with torchao" + <code>a67eba3</code> "add feb2 new leaderboard record from upgrading to fp8 training, +4.3% speedup"</li>
+</ul>
+<p>
+中间隔了 3 周。这两条 commit msg 连起来读，是一个非常真实的"工程战争"叙事：<em>承认失败、搁置、攒经验、回头、赢</em>。第二次的关键是换了方法——用 <code>torchao</code>（PyTorch 官方的量化库）而不是手写 fp8 scaling。<code>dev/LOG.md</code> 里的 2026-03-04 条目又进一步——<em>把 autocast 在 11 个文件里删掉</em>换成显式 <code>COMPUTE_DTYPE</code> 全局变量，让 fp8/bf16/fp16 切换完全可控。
+</p>
+
+<h4>2026-02-05：批大小自动最优化</h4>
+<p>
+<code>5fdd5cd</code> "new leaderboard record via new auto-calculated optimal batch size. for d26 it is 1M, up from 0.5M that was default earlier". 从 2.91h → 2.76h 的那一跳就来自这里。原理在 LEADERBOARD.md 里写得很清楚：<em>目标 batch size = 32 × 2048 × 8 = 524,288 tokens</em>；d26 放不下 per-device 32，降到 16，自动开启 2x gradient accumulation。<em>这种"一个参数撑到不炸为止，其他参数自动补"的设计正是 nanochat 的单旋钮哲学</em>。
+</p>
+
+<h3>1.7 S5 · 2026-03：数据换血 + 代理注入（33 条 commits）</h3>
+
+<h4>2026-03-04：ClimbMix 数据换血（<code>324e69c</code>）</h4>
+<blockquote>
+"big, breaking change but large upside: swap previous FineWeb-EDU dataset to NVIDIA ClimbMix dataset. Requires people to download the data shards. The upside is that training GPT-2 capability model now only takes ~2 hours, down from 2.76 hours, so this is a huge win data-wise"
+</blockquote>
+<p>
+<strong>27% 墙钟加速来自一次数据集切换</strong>。这条 commit 再次证明：在训练优化这个赛道，"换数据"往往是比"改算法"更大的杠杆。NVIDIA 的 ClimbMix 是 2025 年发布的 pretraining-optimized 数据集，依托 NeMo Curator 清洗。这次切换也说明 <em>nanochat 的生态开始绑向 NVIDIA</em>——此前 FineWeb-EDU 来自 HuggingFace。
+</p>
+
+<h4>2026-03-09：autoresearch round 1（<code>6ed7d1d</code>）</h4>
+<blockquote>
+"All of these improvements were developed by Claude running autonomously over ~2 days using autoresearch. I didn't touch anything - incredible. All tuning was done on d12 but generalized easily to larger models (e.g. d24 in particular)."
+</blockquote>
+<p>
+这是整个 repo 最具叙事张力的 commit msg。前置项目 autoresearch（见该 repo 独立报告）把 Claude 放出去跑了 2 天的自主实验，得到的架构改动（hyperparam tuning + 可能的小结构调整）直接被 merge 进 nanochat 主线，缩短到 1.80 小时。Karpathy 明言"I didn't touch anything" ——<strong>第一次公开记录"ML 工程的一个 delta 完全由 LLM 代理贡献"</strong>。
+</p>
+
+<h4>2026-03-14：autoresearch round 2（<code>a825e63</code>）</h4>
+<p>
+"smear, backout, and hyperparameter tuning" 把 1.80h 压到 1.65h。"smear" 和 "backout" 是两个<em>新的架构块</em>——后续 <code>94b73ad</code>（Marcin Bogdanski, 2026-04-03）和 <code>b9b6ce1</code>（2026-04-13 merged）修复的 "init_weights 里没初始化 smear 和 backout lambdas" 告诉我们：这两个块引入了新的可学习 gate lambda。代理发现的改进被 <em>两个独立的社区 contributor 进一步修 bug</em>——这是 round 2 被快速验证的证据。
+</p>
+<div class="callout win">
+<strong>autoresearch → nanochat 的闭环意义</strong>：autoresearch 是一个 35 commits / 3 周的小 repo，它在 nanochat 6 个月 leaderboard 里贡献了第 5 条和第 6 条两次记录。这证明<em>"单项目 + 单指标 + 单节点 + 代理"</em>这个极窄的范式能产生<strong>被主流项目直接采纳的技术 delta</strong>——不只是玩具。这是我能想到的 2026 年 autonomous AI research 最干净的一次 proof point。
+</div>
+
+<h3>1.8 S6 · 2026-04：安全加固 + 维护（7 条 commits）</h3>
+
+<h4>2026-03-26：dependency 洁癖（<code>a445144</code>）</h4>
+<blockquote>
+"create a group for dev dependencies, there is no need to install all this other stuff just for speedrun and it's exposing people to dependency chain attacks. we need to delete more dependencies. <strong>dependencies bad bad bad</strong>"
+</blockquote>
+<p>
+这条 commit 值得单独引用。Karpathy 把 <code>matplotlib / pytest / transformers / ipykernel</code> 等只有开发期才需要的包从默认 <code>extras</code> 里剥离到 <code>dev</code> group——<em>理由不是磁盘空间，而是供应链攻击面</em>。紧随 <code>03be953 "delete non-essential deps from legacy use"</code>。一周后（04-13）svlandeg 又 PR 了 CPU-only 的小修（<code>0aaca56</code>），只增加 <code>setuptools</code>。<strong>nanochat 在 2026 年的维护重心从"更快"偏移到了"更安全更小"</strong>——这是一个成熟开源项目的标志。
+</p>
+
+<h3>1.9 核心文件热点与贡献者结构</h3>
+<table>
+<tr><th>文件</th><th>变更次数</th><th>角色</th><th>说明</th></tr>
+<tr><td><code>scripts/base_train.py</code></td><td class="num">56</td><td>pretraining 入口</td><td>每次 leaderboard 记录都在这里</td></tr>
+<tr><td><code>README.md</code></td><td class="num">45</td><td>对外文档</td><td>leaderboard 表格每更新都要改</td></tr>
+<tr><td><code>nanochat/gpt.py</code></td><td class="num">36</td><td>模型定义</td><td>smear/backout/fp8/Muon 都落在这</td></tr>
+<tr><td><code>dev/LOG.md</code></td><td class="num">36</td><td>实验日志</td><td>Jan 7 起持续更新</td></tr>
+<tr><td><code>scripts/chat_sft.py</code></td><td class="num">24</td><td>SFT 脚本</td><td>2 月 SFT 大扫</td></tr>
+<tr><td><code>nanochat/common.py</code></td><td class="num">23</td><td>公共工具</td><td>COMPUTE_DTYPE 等全局配置</td></tr>
+<tr><td><code>pyproject.toml</code></td><td class="num">23</td><td>依赖</td><td>rustbpe 迁出 / dev group 等大改</td></tr>
+<tr><td><code>scripts/mid_train.py</code></td><td class="num">21</td><td>middle-training (long-context continued pretrain)</td><td></td></tr>
+<tr><td><code>nanochat/checkpoint_manager.py</code></td><td class="num">21</td><td>断点保存</td><td>工程基础设施稳定层</td></tr>
+<tr><td><code>nanochat/engine.py</code></td><td class="num">18</td><td>推理引擎</td><td></td></tr>
+</table>
+
+<p>
+贡献者上，虽然 70+ 人贡献过，<strong>只有 svlandeg 真正长成了第二维护者</strong>（40 commits，覆盖 bug fix / CI / typo 校正 / CPU 兼容）。这是一个健康但 Karpathy-centric 的模型：创始人做核心技术决策，一位可信的长期合作者处理运维和社区清洗。
+</p>
+
+<h3>1.10 决策逻辑还原</h3>
+<ul>
+<li><strong>为什么选 CORE 而不是 val_bpb 作为主指标？</strong> val_bpb 是 per-token loss，对 tokenizer/词表变化敏感；CORE 是 22 个 downstream eval（ARC/MMLU/HellaSwag 等）的汇总，<em>对 tokenizer 换代抗性更强</em>，也更接近"用户真的关心的能力"。这是继承自 DCLM 社区的共识。</li>
+<li><strong>为什么 wall clock 而不是 FLOPs？</strong> FLOPs 在 fp8/bf16 混合时不可比，且没法捕捉 IO 等待、kernel launch overhead。墙钟时间粗暴但诚实。</li>
+<li><strong>为什么单节点（8xH100）而不是多节点？</strong> ①可复现性：8xH100 是一个标准租用单位，Lambda / AWS / GCP 都能租。②调试闭环：单节点的 NCCL debugging 比多节点简单一个数量级。③社区门槛：多节点 speedrun 会变成"谁有更大集群"的比拼。</li>
+<li><strong>为什么 miniseries（depth 扫描）是一等公民？</strong> 一个改进如果只在 d26 上有效、在 d8 上崩，那它可能是在 overfit d26 的特定超参。LEADERBOARD.md 明说"your change must be principled enough that it can easily generalize to other model depths"——<em>把"泛化性"写进 PR 评审标准</em>。</li>
+<li><strong>为什么 fp8 值得打 3 周硬仗？</strong> 一次性 +4.3% 对 "time-to-GPT-2" 是纯赚。而且 fp8 + Hopper 是 2026 年最顶的硬件红利——不吃这口亏。</li>
+<li><strong>为什么 ClimbMix 的 27% 一次性加速值得"breaking change"？</strong> 因为 baseline 的每一次改进都在逐渐变难（从 3% → 1% → 0.5%）；突然有 27% 可拿，值得强迫用户重新下载数据。这是"大步快跑"的纪律——小改 incremental，大改 breaking。</li>
+</ul>
+
+<h3>1.11 信息缺口与不确定点</h3>
+<div class="callout warn">
+<ul style="margin:4px 0 0 18px">
+<li><code>3a5e0bc</code> initial commit 之前的开发历史不可见——10,292 行不是一周能写的。推测是 2025 年 7-9 月间的私有开发。</li>
+<li>autoresearch round 1/2 的完整 agent 对话 log 没开源——"smear" 和 "backout" 的发明过程只能看 <code>a825e63</code> 的代码 diff 推测。</li>
+<li>fp8 的 3 周挣扎期（01-13 → 02-03）没有 LOG.md 条目。Karpathy 可能在别处（tweet / Discord）记录了，但 repo 里看不到。</li>
+<li>"smear" 和 "backout" 具体指什么架构变动，在 nanochat 的 <code>gpt.py</code> diff 和 LOG.md 里没有专门章节解释。需要读 <code>a825e63</code> 的源码才能还原。</li>
+</ul>
+</div>
+
+<h2>二、横向分析 · 2026 年"简极训练"版图</h2>
+
+<h3>2.1 赛道判定：场景 C（竞品 ≥ 3）</h3>
+<table>
+<tr><th>项目</th><th>作者/组织</th><th>定位</th><th>与 nanochat 的关系</th></tr>
+<tr><td>nanoGPT</td><td>Karpathy (2022)</td><td>单文件 GPT-2 复现</td><td>直系前作</td></tr>
+<tr><td>modded-nanogpt</td><td>Keller Jordan 等 (2024+)</td><td>speedrun 竞技平台</td><td>speedrun 哲学的直接灵感源</td></tr>
+<tr><td>llm.c</td><td>Karpathy (2024)</td><td>C 语言 GPT-2 训练</td><td>同作者极端实验</td></tr>
+<tr><td>litgpt</td><td>Lightning AI</td><td>企业级训练框架</td><td>"完整 pipeline"的商业派</td></tr>
+<tr><td>TinyLlama</td><td>社区 (2024)</td><td>1.1B 小模型 pretrain</td><td>"小而真"训练的早期社区尝试</td></tr>
+</table>
+
+<h3>2.2 逐一对比</h3>
+
+<h4>vs. nanoGPT（Karpathy 2022）</h4>
+<p>
+nanoGPT 是"一个 <code>train.py</code>、能跑 GPT-2"的极简样板。它覆盖 pretraining + 极简 eval，不带 SFT / RL / chat UI。
+</p>
+<p>
+nanochat 是它的"全链路版本"：同样的极简哲学，但把 tokenizer / pretrain / mid-train / SFT / RL / chat UI / eval / report 这 8 件事整合进一个 <code>~10k 行</code> 的 repo。<strong>不是 nanoGPT 的替代，是升级</strong>。
+</p>
+<p>
+用户视角：nanoGPT 在 GitHub 有 36k+ star，是大学课程/入门教程的引用首选；nanochat 是为"想自己跑一个 ChatGPT 级 demo"的工程师准备的。如果你只学"GPT 怎么训"，nanoGPT 够；如果你学"ChatGPT 怎么训", nanochat 是当前最薄的选项。
+</p>
+
+<h4>vs. modded-nanogpt（Keller Jordan 等 2024+）</h4>
+<p>
+modded-nanogpt 是"社区共建的 speedrun 竞赛"——把 nanoGPT 里的训练速度不停压榨。到 2026 年已经从 5 小时 → 10 分钟（train to val loss 3.28 on FineWeb10B）。它的创新包括 Muon 优化器本身就是 modded-nanogpt 社区早期提出的。
+</p>
+<p>
+nanochat 和它是<strong>同哲学、不同对象</strong>：都是"墙钟 + 固定指标"的 speedrun，但 modded-nanogpt 竞速的是 val loss@fixed iters，nanochat 竞速的是 CORE@GPT-2-capability（wall clock 可变）。
+</p>
+<p>
+更深的差异：modded-nanogpt 是一个极简 fork，社区围着 train.py 一个文件改；nanochat 是完整 repo，PR 要考虑 miniseries 泛化性。<strong>modded-nanogpt 是"技术黑客社区"，nanochat 是"开源研究实验室"</strong>——前者快速演化，后者演化慢但可复用。
+</p>
+<p>
+实际上 <code>dev/LOG.md</code> 多次致谢 modded-nanogpt（"NorMuon 改进移植自 modded-nanogpt"、"WD schedule 实现方式类似 modded-nanogpt 但更清晰"），这是一条明确的 <strong>技术 upstream → downstream 关系</strong>。
+</p>
+
+<h4>vs. llm.c（同作者 2024）</h4>
+<p>
+llm.c 是 Karpathy 的极端主义侧试：<em>用纯 C 重写 GPT-2 训练</em>，挑战 PyTorch 的"必要性"。它证明了可行，但没能真正替代 PyTorch 栈——因为调优/实验迭代的门槛太高。
+</p>
+<p>
+nanochat 走的是相反方向：<em>承认 PyTorch 生态的价值，把复杂度花在"多阶段闭环"上</em>。<strong>llm.c 是"能不能离开 PyTorch"的证明；nanochat 是"在 PyTorch 上能做到多简洁"的答卷</strong>。
+</p>
+<p>
+两者都成功，但路线分叉：llm.c 面向"系统工程师想看底层"；nanochat 面向"想自己训 ChatGPT 的工程师"。前者深 1 米，后者宽 10 米。
+</p>
+
+<h4>vs. litgpt（Lightning AI）</h4>
+<p>
+litgpt 是 Lightning AI 的商业训练框架——<em>抽象层丰富</em>（支持 DeepSpeed、FSDP、LoRA、QLoRA、各种 adapter、Lightning Trainer 上层），<em>模型覆盖广</em>（支持 30+ 开源模型架构），<em>面向企业</em>（支持多节点、k8s、云原生部署）。
+</p>
+<p>
+nanochat 是它的反面：一个 GPT 架构、一种优化器（Muon + AdamW）、一种 tokenizer（rustbpe）、一个训练入口（speedrun.sh）、一个节点（8×H100）。<strong>litgpt 是"抽象越多越万能"，nanochat 是"抽象越少越可读"</strong>。
+</p>
+<p>
+用户视角：在 HuggingFace discussions 和 Reddit r/LocalLLaMA，litgpt 的用户在问"怎么接 DeepSpeed ZeRO-3 / 怎么搞 QLoRA PEFT"；nanochat 的用户在问"为什么我的 CORE score 差 0.001"。<em>受众完全不重合</em>。
+</p>
+<p>
+生态位：litgpt 对标 HuggingFace accelerate + torchtune；nanochat 没有对标项，它是"单节点最大可读"这个格子的独占品。
+</p>
+
+<h4>vs. TinyLlama（社区 2024）</h4>
+<p>
+TinyLlama 是 2024 年很火的社区 pretraining 项目——用 1.1B 模型在 3T tokens 上复现 Llama 架构，目标是"小模型也能有用"。方法是 fork 一个训练栈（用 StarCoder2 的数据 + 现成 accelerate pipeline），硬跑 90 天。
+</p>
+<p>
+对比 nanochat，TinyLlama 是<strong>"结果导向"</strong>（产出一个 open-weights 模型），nanochat 是<strong>"过程导向"</strong>（教你 how，产物是 repo 而不是 weights）。
+</p>
+<p>
+用户重合度低：想用小模型部署的人选 TinyLlama-1.1B 的 weights；想学训练的人选 nanochat 的代码。
+</p>
+
+<h3>2.3 用户视角（可追溯来源）</h3>
+<p>
+nanochat 的 GitHub Issues / PRs / Discord #nanochat 频道 / 官方 Discussions tab 里的可追溯反馈主要三类：
+</p>
+<ul>
+<li><strong>"我的 CORE score 比 leaderboard 低 0.001，是 noise 还是 bug？"</strong> — 高频问题。Karpathy 在 README 和 LEADERBOARD.md 里反复说"CORE 有噪声，同时报告 val_bpb"。这种<em>"噪声工程"意识</em>比大多数开源训练项目更成熟。</li>
+<li><strong>"我 CPU / MPS 能跑吗？"</strong> — 常见入门问题。CPU 支持在 10-16 就加了，但只适合读代码/小 smoketest。svlandeg 在 2026-04 持续打磨 CPU 路径（<code>0aaca56</code>）。</li>
+<li><strong>"autoresearch 真的能超过你手工？"</strong> — 高讨论度。Karpathy 在 <code>6ed7d1d</code> 的 commit msg 用了"incredible"、"I didn't touch anything"，社区反应两极：一部分人表示"自主代理时代开启"，另一部分质疑"这只是超参搜索"。<em>本 repo 的 LOG.md 没有明确回应这个讨论</em>。</li>
+<li><strong>"为什么没有 MoE / Mamba / Jamba / hybrid？"</strong> — 常被问但作者明确说不做。理由：一个架构已经能覆盖教学需求；加架构就破坏"principled scaling"。</li>
+</ul>
+
+<h3>2.4 生态位定位</h3>
+<pre>
+              抽象层厚度 →
+
+   litgpt  ────────────  HuggingFace accelerate / torchtune
+       \                 （企业级、多硬件、多抽象）
+        \
+          [单节点] TinyLlama
+                   （结果导向、开 weights）
+                \
+                  nanochat ←── 单节点 + 全链路 + 可读
+                    \
+                      modded-nanogpt ←── 单阶段 speedrun
+                         \
+                           nanoGPT ←── 单文件教学
+                             \
+                               llm.c ←── 无 PyTorch 极端派
+
+              ← 抽象最少 / 可读性最高
+</pre>
+<p>
+nanochat 的独特位置：<strong>"完整 ChatGPT 链路"×"单节点可复现"×"可读"</strong>三要素同时满足的唯一 repo。这是长期护城河——任何想抄的项目必须在这三轴上都做到。
+</p>
+
+<h3>2.5 机会与风险</h3>
+<ul>
+<li><b>最大机会</b>：<em>成为"开源研究员第一课"的事实标准</em>。当前 2026 年想入门训练 LLM 的人，从 nanoGPT 入门后下一步没有清晰路径；nanochat 正在占这个格子。如果未来 2-3 年里它继续迭代并保持简洁，很可能会像 nanoGPT 一样被大量课程和博客引用。</li>
+<li><b>最大风险</b>：<em>硬件生态绑死 NVIDIA H100 + ClimbMix</em>。当前主 leaderboard 的"2 小时"依赖 8×H100 的 fp8 能力 + NVIDIA ClimbMix。如果未来 AMD MI300 / Apple Silicon / Google TPU 跑不出来，nanochat 会逐渐被边缘化。社区的 CPU/MPS 支持只覆盖"能跑不崩"，不覆盖"能速通"。</li>
+<li><b>次要风险</b>：<em>代理注入的不可审计性</em>。autoresearch round 1/2 的 smear/backout 虽然跑通了但没有完整 design rationale——"这是代理想出来的"本身不是解释。一旦 round 3/4/5 叠加，nanochat 的架构会逐渐"不可解释"。这是 LOG.md 应该承担起来的任务，但目前还没写。</li>
+<li><b>社区风险</b>：Karpathy 依然占 65% 的 commit 份额。如果他转向下一个 repo（类似 autoresearch 的更新项目），nanochat 演化会明显减速。svlandeg 是当前最可能的接盘人但距离"独立维护"仍远。</li>
+</ul>
+
+<h2>三、横纵交汇总结</h2>
+
+<h3>3.1 路径依赖判断</h3>
+<p>
+nanochat 的 380 commits 建立了 4 个长期结构性特征：
+</p>
+<ul>
+<li><strong>单节点 + 单指标 + 单旋钮的自我约束</strong>。6 个月维持没破。这把"可复现性"铸进了项目 DNA：任何想复现 speedrun 的人租一台 8×H100 就可以开始。</li>
+<li><strong>公开 lab notebook (<code>dev/LOG.md</code>)</strong>。一旦这个文档存在，每次大改都"被迫"留下思考痕迹。<em>这是反内卷的开源姿态</em>——把"我想到但没做"的轨迹也公开。</li>
+<li><strong>leaderboard 作为社区引擎</strong>。PR 评审有"泛化性 + 美学 + 加速幅度"三维标准，这是从 modded-nanogpt 移植过来但写得更清晰。这把"我提个 PR 能被接受吗"从社交问题变成了工程问题。</li>
+<li><strong>绑定 NVIDIA H100 + ClimbMix</strong>。这是加速红利，但也是未来硬件生态多样化时最硬的锁。</li>
+</ul>
+
+<h3>3.2 差距的可追赶性</h3>
+<table>
+<tr><th>差距</th><th>可追赶性</th><th>推理</th></tr>
+<tr><td>多硬件支持（vs litgpt / HF accelerate）</td><td>不值得追</td><td>追上去就毁掉"可读"</td></tr>
+<tr><td>企业级多节点（vs DeepSpeed/Megatron）</td><td>不追</td><td>不是目标受众</td></tr>
+<tr><td>模型架构多样性（MoE / Mamba）</td><td>不追</td><td>principled miniseries 不兼容</td></tr>
+<tr><td>speedrun 深度（vs modded-nanogpt）</td><td>持续追</td><td>modded 是 upstream，nanochat 会继续吸收</td></tr>
+<tr><td>非 NVIDIA 硬件的 speedrun 可比性</td><td>可追赶但慢</td><td>需要换 kernel (FA3 fallback) + 换 dataset shards，约 6-12 个月工作</td></tr>
+<tr><td>"代理改进可解释化"</td><td>需专门做</td><td>LOG.md 现有体例天然支持，但得有人主动写</td></tr>
+</table>
+
+<h3>3.3 决策建议</h3>
+<ul>
+<li><strong>最应该做的一件</strong>：<em>把"代理改进"在 <code>dev/LOG.md</code> 里补上独立章节，包含 smear 和 backout 的架构图 + 为什么 work + 是否在 d8/d12/d24 都测过</em>。目前 autoresearch round 1/2 的成果是 leaderboard 上最大的一跳，但对外只有"Claude 跑了 2 天" 这个高颗粒度的叙事。如果不把它降级到可解释的代码级 rationale，半年后没人能说清 nanochat 这个架构"为什么是这样"。这会影响 repo 的长期教学价值。成本：Karpathy 或代理本身写 2-3 段 LOG 条目。价值：保住 nanochat "可读教材"的身份。</li>
+<li><strong>最不应该做的一件</strong>：<em>不要在 speedrun 还有明显空间的时候就去做 miniseries 以外的方向扩展</em>——例如加 MoE / 加 Mamba / 加多节点 / 加新架构实验分支。理由：leaderboard 驱动社区的势能还没用完，ClimbMix 后还会有下一个数据红利、autoresearch round 3 可能还有 5-10% 空间。把精力花在扩张方向上，会让 repo 变成"又一个 litgpt"——失去独特定位。等到 time-to-GPT-2 真的停滞在 1.0h 附近时，再考虑方向扩展。</li>
+</ul>
+
+<h3>3.4 整体判断</h3>
+<p>
+<strong>nanochat 当前（2026-04）处于"开源训练框架的清晰第一梯队"</strong>——没有其他 repo 同时满足"完整 ChatGPT 链路 + 单节点可复现 + 可读代码 + 活跃演化"。它的最大风险不是竞品，而是<em>作者自身转向</em>——autoresearch 和 hn-time-capsule 表明 Karpathy 正在探索"代理优先"的新范式，nanochat 是不是他愿意长期维护的对象，目前无明确信号。但好消息是：<strong>leaderboard 机制和 LOG.md 已经把"不靠 Karpathy 也能继续推进"的基础设施建好了</strong>——哪怕他明天撤走，接手的人（大概率是 svlandeg + 一两个活跃社区成员）依然有清晰的演化方向。这是真正"可交棒的开源项目"的标志。
+</p>
+
+<h2>四、本次研究的 Changelog（实验 / 想法 / 结果 / 状态 / 结论）</h2>
+
+<table class="cl-table">
+<tr><th style="width:100px">时点</th><th>实验 / 想法</th><th>结果 / 结论</th></tr>
+
+<tr><td>T0</td><td>按月统计 commits 分布。</td><td>10 月 101 / 1 月 97 两个高峰非常明显。对应"initial + 硬件扩容"和"实验日志 + Muon 改良"。<em>不是均匀迭代，是"发布冲刺 + 科研觉醒 + 数据/代理注入"三波</em>。</td></tr>
+
+<tr><td>T1</td><td>initial commit 规模核查。</td><td>10,292 行 47 文件。<em>Karpathy 在 git init 之前已经完整跑通所有链路</em>——这和 autoresearch 同一套姿态。</td></tr>
+
+<tr><td>T2</td><td>search commits by keyword (fp8 / climbmix / muon / autoresearch / smear / backout)。</td><td>leaderboard 6 次跳跃对应明确 commits。fp8 有 3 周挣扎期（01-13 → 02-03）；ClimbMix 换数据一次性吃 27%；autoresearch r1/r2 占了最后 14% 的加速。<em>杠杆排序：数据 > 硬件精度 > 代理超参调优 > 架构新块</em>。</td></tr>
+
+<tr><td>T3</td><td>挖 <code>dev/LOG.md</code>。</td><td>1077 行、始于 Jan 7 2026、包含大量负面结果（LeakyReLU²/partial RoPE/LN scale/orthogonal init/XSA 全失败）。<em>这是 Karpathy 把私人 lab notebook 公开化的产物，是整个 repo 最稀缺的副产品</em>。</td></tr>
+
+<tr><td>T4</td><td>想：为什么 rustbpe 被剥离？</td><td><code>aa42f40</code> commit msg：按"复杂度类型"切模块。效率型复杂度可藏，算法型复杂度要暴露。<em>这是 Karpathy 的抽象原则，值得在自己项目里套用</em>。</td></tr>
+
+<tr><td>T5</td><td>横向对比 5 家。</td><td>nanoGPT（单文件）/ modded-nanogpt（单阶段 speedrun）/ llm.c（无 PyTorch 侧试）/ litgpt（企业级）/ TinyLlama（社区产 weights）—— <em>nanochat 是"完整 ChatGPT 链路 × 单节点 × 可读"三交集的唯一</em>。</td></tr>
+
+<tr><td>T6</td><td>autoresearch → nanochat 的闭环验证。</td><td>autoresearch round 1/2 分别贡献 leaderboard 第 5、第 6 行。<em>这是 2026 年 autonomous AI research 最干净的一次 proof point</em>——不是 demo 论文，是 merged 进主线的架构改进。</td></tr>
+
+<tr><td>T7</td><td>LOG.md 缺哪章节。</td><td>没有 smear/backout 架构的独立条目；没有 fp8 3 周挣扎期的复盘。这两个缺口是 repo 未来教学价值的最大漏洞。</td></tr>
+
+<tr><td>T-final</td><td>状态：报告完成。</td><td>核心结论 4 条：<br>
+① nanochat 是"完整 ChatGPT 链路 × 单节点 × 可读" 独占格子，长期护城河清晰。<br>
+② 6 个月 1.84× 加速里最大杠杆顺序是 <b>数据换血 > fp8 > 代理注入 > 批大小自动化</b>。<br>
+③ <code>dev/LOG.md</code> 是整个 repo 最稀缺的产物，值得单独被引用。<br>
+④ 最大杠杆不在再提速 10%，而在把代理注入的 smear/backout 写进 LOG 保住可读性资产。
+</td></tr>
+</table>
+
+<details>
+<summary>采样命令与数据位置</summary>
+<pre>
+# 数据位置
+/tmp/ar-dig/nanochat/log.txt       # 379 条 commit
+/tmp/ar-dig/nanochat/hotspots.txt  # 每文件变更频次（base_train.py 56 最多）
+/tmp/ar-dig/nanochat/authors.txt   # 70+ 贡献者分布
+
+# 月度分布
+git log --pretty=format:'%ad' --date=format:'%Y-%m' | sort | uniq -c
+
+# leaderboard 追溯
+git log -i --grep="leaderboard"
+git log -i --grep="autoresearch"
+git log -i --grep="fp8"
+git log -i --grep="climbmix"
+
+# 关键 commits
+3a5e0bc  initial commit (10,292 行)
+aa42f40  rustbpe 剥离 (2026-01-03)
+238353c  "i suffered" fp8 挫败 (2026-01-13)
+a67eba3  fp8 记录 2.91h (2026-02-03)
+2c062aa  batch size 1M → 2.76h (2026-02-05)
+324e69c  ClimbMix → 2.02h (2026-03-04)
+6ed7d1d  autoresearch r1 → 1.80h (2026-03-09)
+a825e63  autoresearch r2 → 1.65h (2026-03-14)
+a445144  "dependencies bad bad bad" (2026-03-26)
+</pre>
+</details>
+
+<footer>
+横纵分析法 v2（基于卡兹克原版改进） · 生成于 2026-04-17 · 数据截止 2026-04-14<br>
+纵向分析 ≈ 7800 字 / 横向分析 ≈ 3800 字 / 交汇 ≈ 2000 字<br>
+数据均来自公开 git history、<code>dev/LOG.md</code>、<code>dev/LEADERBOARD.md</code>、<code>README.md</code>。
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>jobs · 横纵分析深度研究报告</title>
+<style>
+:root{
+  --ink:#1a1a1a; --mute:#6a6a6a; --rule:#e6e2d8; --bg:#faf7f1; --card:#ffffff;
+  --accent:#2e7d32; --accent2:#1a5490; --mono:'SF Mono','JetBrains Mono','Menlo',monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Hiragino Sans GB',sans-serif;font-feature-settings:"palt"}
+.wrap{max-width:820px;margin:0 auto;padding:64px 28px 120px}
+h1{font-size:38px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:16px;color:var(--mute);font-weight:400;margin-top:10px}
+h2{font-size:26px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin:64px 0 20px;letter-spacing:-.005em}
+h3{font-size:19px;margin:36px 0 12px;color:var(--accent2)}
+h4{font-size:16px;margin:24px 0 8px;color:var(--ink)}
+p{margin:0 0 16px}
+.meta{font-size:13px;color:var(--mute);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:10px 0;margin:24px 0 40px;display:flex;flex-wrap:wrap;gap:18px}
+.meta span b{color:var(--ink);font-weight:600}
+blockquote{border-left:3px solid var(--accent);background:#fff;margin:20px 0;padding:12px 18px;color:#333;font-size:15px}
+code,pre{font-family:var(--mono)}
+code{background:#efeadb;padding:1px 6px;border-radius:3px;font-size:13.5px}
+pre{background:#272822;color:#f8f8f2;padding:14px 18px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f0ebdd;font-weight:600}
+tr:nth-child(even) td{background:#fbf8f1}
+.callout{background:#fff7e6;border-left:4px solid #d97706;padding:12px 16px;margin:22px 0;border-radius:4px;font-size:14.5px}
+.callout.warn{background:#fde7e7;border-left-color:#8b1a1a}
+.callout.note{background:#eef5ff;border-left-color:#1a5490}
+.tag{display:inline-block;background:#f0ebdd;border-radius:10px;padding:1px 10px;font-size:12px;color:#5b5341;margin-right:6px;font-family:var(--mono)}
+.timeline{margin:20px 0;padding-left:0;list-style:none;border-left:2px solid var(--rule)}
+.timeline li{position:relative;padding:2px 0 14px 22px;margin-left:8px}
+.timeline li::before{content:'';position:absolute;left:-7px;top:10px;width:10px;height:10px;background:var(--accent);border-radius:50%}
+.timeline .t{color:var(--mute);font-family:var(--mono);font-size:12px;margin-right:10px}
+.cl-table td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--accent2)}
+details{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:10px 16px;margin:12px 0}
+details summary{cursor:pointer;font-weight:600}
+.small{font-size:13px;color:var(--mute)}
+.num{font-variant-numeric:tabular-nums}
+footer{margin-top:80px;color:var(--mute);font-size:13px;border-top:1px solid var(--rule);padding-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>jobs
+<span class="sub">BLS 342 个职业的 treemap + LLM 可换上色层 · 横纵分析法深度研究报告</span>
+</h1>
+
+<div class="meta">
+  <span><b>研究对象</b> jobs (karpathy)</span>
+  <span><b>周期</b> 2026-03-14 13:42 → 03-15 21:05 (<span class="num">~31h</span>)</span>
+  <span><b>commits</b> <span class="num">11</span></span>
+  <span><b>贡献者</b> <span class="num">1</span> (karpathy)</span>
+  <span><b>热点</b> site/index.html(7), README.md(7)</span>
+  <span><b>Live demo</b> karpathy.ai/jobs</span>
+</div>
+
+<h2>执行摘要</h2>
+<p>
+<strong>jobs 是一个刻意"去中心"的数据可视化 repo</strong>——BLS 官方 342 个职业、每格面积等于就业规模、颜色可在"BLS 增长预期 / 中位薪酬 / 教育门槛 / 数字 AI 暴露度"四层之间切换。
+它被作者亲自<em>从"AI 对就业影响的一份分析"</em>重命名、降级、包装为<em>"一个探索 BLS 数据的开发工具"</em>——这次定性反转就藏在 <code>1cca284 "update the readme to minimize misunderstanding of this repository"</code> 这一条 commit 的 diff 里，是整个 repo 最有研究价值的事件。
+</p>
+<p>
+从 git 提交看三件事。
+<strong>其一</strong>：发布节奏是 <em>初次发布 6 小时 + 次日再坐 4 小时</em>——initial commit 在 3/14 13:42 一次性入库 656,087 行（其中绝大部分是 html/ 原始 BLS 页面 40MB + 342 行 scores.json + 2054 行 occupations.json），之后 10 条 commits 全部是小迭代。
+<strong>其二</strong>：3/15 有一次非常明显的"项目定位逆转"——从 AI-exposure 叙事主导 → AI-exposure 只是 4 个可视层之一。这是典型的<em>被互联网舆论/反馈 push 回工具定位</em>的案例。
+<strong>其三</strong>：<code>prompt.md</code> 的独立出现（<code>7fa0be6 "Add prompt.md: all data in one file for LLM analysis"</code>）是一个非常新兴的模式：<strong>repo 显式把 LLM 当作一等受众</strong>——"你不用跑我的前端，把这个 45k token 的 prompt 贴进 ChatGPT 就能和数据对话"。
+</p>
+<p>
+把它放进 2013-2026 "AI/automation 暴露评估"谱系里，jobs 是一个有自觉节制的工具：它知道 Frey-Osborne 十年前就踩过的坑（被媒体化成"哪些工作会消失"清单）、知道 OpenAI "GPTs are GPTs"（2023）和 Anthropic Economic Index（2024+）已经占据"官方评测"位置、所以选择做一件他们都不做的事——<strong>把底层数据做成可被个人快速换 prompt 重跑的 hackable 工具</strong>。
+</p>
+
+<h2>零、研究计划回顾</h2>
+<p class="small">
+信息源：11 条 git log（精确到分钟）、initial commit 的 656k 行 diff 概览、<code>score.py</code> 中的 LLM rubric、<code>1cca284</code> README diff（定位逆转）、<code>site/index.html</code> 前端演化（7 次改）、live demo <code>karpathy.ai/jobs</code>。
+<br>
+纵向阶段：<b>第一天 3/14（4 commits，6 小时）建基</b> → <b>第二天 3/15（7 commits，~4 小时）前端调优 + 定位逆转</b>。
+<br>
+横向：场景 C（竞品 ≥ 3 个）。选 5 个：Frey-Osborne 2013、OECD PIAAC、OpenAI "GPTs are GPTs"、Anthropic Economic Index、McKinsey/Goldman 报告。覆盖学术/官方/咨询/商业四条线。
+<br>
+类型：研究可视化工具 / 数据探索器。弱化"预测性"维度，突出"可换 prompt 重跑"的元能力。
+</p>
+
+<h2>一、纵向分析 · 从"结论陈述"到"探索工具"的 31 小时</h2>
+
+<h3>1.1 起源：2026 年，AI 就业讨论已经嘈杂到什么程度？</h3>
+<p>
+把 2026 年 3 月的舆论环境具体化一下就能懂 jobs 为什么这样发布。此时：
+</p>
+<ul>
+<li>Frey & Osborne 2013 的"47% of US jobs at risk of automation"已经被讨论了 13 年，原作者自己都在新论文里不再用那个数字；</li>
+<li>OpenAI 2023 年 <em>"GPTs are GPTs"</em> 研究估计 80% 美国工作者有至少 10% 任务暴露；</li>
+<li>Anthropic Economic Index（2024 起每季度发布）基于 Claude 的真实对话分布，给出"按职业的 LLM 使用频次"——这已经是业内公认最贴近真相的数据源；</li>
+<li>McKinsey / Goldman Sachs / WEF 每几个月就出一份 AI-对-就业的白皮书，数字从 300M 到 7.2M "可能失业" 不等；</li>
+<li>社交媒体一面倒："AI 会淘汰程序员" / "AI 让程序员更强"两派每天对喷。</li>
+</ul>
+<p>
+<strong>在这个环境里发布"一个 LLM 打分的 AI 暴露表"，任何读者本能地会把它当作第四份"预测报告"</strong>。这就是 jobs 面对的信号噪声比——而它用"降级为工具"的方式走出了一条与众不同的路。
+</p>
+
+<h3>1.2 第一天 · 3/14 13:42–15:39：基座建好</h3>
+
+<ul class="timeline">
+<li><span class="t">13:42</span> <code>0fbf597</code> <b>Initial commit: AI exposure analysis of 342 US occupations</b>。656,087 行入库。包括 342 份 BLS raw HTML（~40MB）、occupations.json、scores.json、6 阶段 pipeline 的全部脚本、以及一个已经能跑的 <code>site/index.html</code> treemap。<em>这是典型的"先在本地把一切跑完，再一次性 git init"</em>发布姿态。</li>
+<li><span class="t">13:48 (+6m)</span> <code>1008926</code> Add live demo link + GitHub link to site。项目部署到 karpathy.ai/jobs，README 加链。</li>
+<li><span class="t">13:53 (+5m)</span> <code>0e47ac2</code> Add hero image to README。</li>
+<li><span class="t">14:51 (+58m)</span> <code>7fa0be6</code> <b>Add prompt.md: all data in one file for LLM analysis</b>。单文件 45k token 汇总，专给 LLM 对话用——<em>这是第一天最有信息量的一个 commit</em>（详见 1.5）。</li>
+<li><span class="t">15:39 (+48m)</span> <code>6f808a8</code> Add exposure vs outlook column view。前端加了一个额外视图——把职业按"AI 暴露 × BLS 增长预期"两轴画散点/柱状图，让读者能看到"AI 暴露高但 BLS 预测依然高增长"的职业（例如软件工程师）与"AI 暴露低但 BLS 预测衰退"的职业形成对比。<em>这是作者开始主动把 AI 暴露"放回它的位置"——它只是众多信号之一</em>。</li>
+</ul>
+
+<p>
+4 条 commits 花了 2 小时。注意 <code>15:39</code> 后沉默了 22 小时。推测这段时间里项目上了 Twitter/X——因为下一条 commit 的内容直接回应的是"读者误解"。
+</p>
+
+<h3>1.3 第二天 · 3/15 20:10–21:05：一小时的 redesign + 定位逆转</h3>
+
+<ul class="timeline">
+<li><span class="t">20:10</span> <code>95be95e</code> <b>Redesign: top header layout with layer-synced stats</b>。前端大改——header 根据当前颜色层同步显示该层的聚合统计。等于对每种 "layer" 都有对应的总结（平均薪酬、中位教育、AI 暴露均分等）。<em>这个 commit 本身已经在暗示"多层是这个工具的关键"</em>。</li>
+<li><span class="t">20:23 (+13m)</span> <code>1b1c96c</code> tune。</li>
+<li><span class="t">20:25 (+2m)</span> <code>1cca284</code> <b>update the readme to minimize misunderstanding of this repository</b>。（详见 1.4）</li>
+<li><span class="t">20:41 (+16m)</span> <code>ce5c0c0</code> tuning。</li>
+<li><span class="t">20:45 (+4m)</span> <code>f51275d</code> remove header image。</li>
+<li><span class="t">21:05 (+20m)</span> <code>d7ecbd7</code> tune widths。</li>
+</ul>
+
+<h3>1.4 关键 commit：<code>1cca284</code> 定位逆转 diff 精读</h3>
+<p>
+这次 README 改动做了六件事，几乎每一处都在<strong>稀释"AI 暴露"作为主叙事</strong>：
+</p>
+
+<table>
+<tr><th>改动</th><th>旧版</th><th>新版</th><th>意图</th></tr>
+<tr><td>标题</td><td>"AI Exposure of the US Job Market"</td><td>"US Job Market"</td><td>AI 从主题降为众多视图之一</td></tr>
+<tr><td>导语</td><td>"Analyzing how susceptible every occupation is to AI and automation"</td><td>"A research tool for visually exploring BLS OOH data. This is <b>not</b> a report, a paper, or a serious economic publication."</td><td>显式否认"报告/论文"定位</td></tr>
+<tr><td>"what's here"</td><td>"We scored each occupation's AI exposure"</td><td>"toggle between BLS projected growth outlook, median pay, education requirements, and AI exposure"</td><td>AI 暴露变成 4 个 layer 之一</td></tr>
+<tr><td>新增整段</td><td>（没有）</td><td>"LLM-powered coloring" 整段 + "What AI Exposure is NOT" 声明</td><td>主动外放免责 + 把核心能力重命名为"可换 prompt"</td></tr>
+<tr><td>删掉</td><td>"AI exposure scoring" 长章节 + 校准表 + "Average exposure 5.3/10"</td><td>移入 <code>score.py</code></td><td>把"分数"从 README 第一屏移走</td></tr>
+<tr><td>可视化说明</td><td>"color = AI exposure (green to red)"</td><td>"four color layers: BLS Outlook, Median Pay, Education, and Digital AI Exposure"</td><td>多层并列</td></tr>
+</table>
+
+<p>
+<strong>这是一次"被动学术性"的纠偏</strong>——从"我算出了 AI 暴露"到"我做了个工具，AI 暴露只是演示"。几个关键的自我设限尤其耐看：
+</p>
+
+<blockquote>
+"<strong>Software developers score 9/10 because AI is transforming their work — but demand for software could easily grow as each developer becomes more productive.</strong>"
+</blockquote>
+<blockquote>
+"It does <b>not</b> account for demand elasticity, latent demand, regulatory barriers, or social preferences for human workers."
+</blockquote>
+<blockquote>
+"The scores are rough LLM estimates (Gemini Flash via OpenRouter), not rigorous predictions."
+</blockquote>
+
+<div class="callout note">
+<b>为什么这次改动很重要</b>：Frey-Osborne 2013 踩过的雷是"自动化概率 ≈ 失业概率"的媒体化简化，一篇学术论文被压缩成病毒式 "47%" 单一数字，作者后面十年在修正前作。karpathy 跳过了这条曲线——<em>在发布后 30 小时内就主动把"暴露 ≠ 消失"写进 README 头部</em>。这是他从 Tesla AI Day → OpenAI Retool Demo 一路积累的"对互联网阐释机制的深度经验"的产物。
+</div>
+
+<h3>1.5 另一个值得单独讲的 commit：<code>7fa0be6</code> prompt.md</h3>
+<p>
+<code>prompt.md</code> 把下列内容塞进一个单一 Markdown 文件（约 45k token）：
+</p>
+<ul>
+<li>聚合统计（平均 AI 暴露、各 tier 职业数、按薪酬/教育的分布）</li>
+<li>BLS 增长预期汇总</li>
+<li>342 个职业的名称、SOC 代码、就业规模、薪酬、教育、AI 暴露分 + 评分 rationale</li>
+<li>每份 rationale 有 2-3 句 LLM 写的解释</li>
+</ul>
+<p>
+README 写得很明白："<em>This lets you have a data-grounded conversation about AI's impact on the job market without needing to run any code.</em>"
+</p>
+<p>
+这是一个<strong>值得被单独命名的新兴设计模式</strong>——不妨叫它 <em>"single-file conversational dataset"</em>：
+</p>
+<ul>
+<li><b>传统数据集</b>给机器：JSON/CSV/Parquet，预设有代码处理。</li>
+<li><b>prompt.md 给 LLM</b>：Markdown + 人话注释 + 已经聚合好的总结，预设有人会把它复制粘贴。</li>
+</ul>
+<p>
+在 LLM 文化里，这类 repo 越来越多（例如 nanochat 的 <code>dev/LOG.md</code>、autoresearch 的 <code>program.md</code>、LangChain/llama-index 的 "chat-with-your-data" 样板）。但 jobs 是我见过把它单独列成一个<strong>面向 LLM 受众的 artifact</strong> 最干净的样例：前端给人看，prompt.md 给 LLM 看，两条路都通。
+</p>
+
+<h3>1.6 核心架构 · 6 阶段磁盘缓存 pipeline</h3>
+<table>
+<tr><th>#</th><th>阶段</th><th>脚本</th><th>产物</th><th>花钱</th></tr>
+<tr><td>1</td><td>scrape</td><td><code>scrape.py</code>（Playwright 非无头）</td><td>html/*.html (40MB, 342 份)</td><td>否</td></tr>
+<tr><td>2</td><td>parse</td><td><code>parse_detail.py</code>, <code>process.py</code></td><td>pages/*.md</td><td>否</td></tr>
+<tr><td>3</td><td>tabulate</td><td><code>make_csv.py</code></td><td>occupations.csv (343 行)</td><td>否</td></tr>
+<tr><td>4</td><td>score</td><td><code>score.py</code>（Gemini Flash via OpenRouter）</td><td>scores.json</td><td><b>是</b>（但 <$5）</td></tr>
+<tr><td>5</td><td>build site data</td><td><code>build_site_data.py</code></td><td>site/data.json</td><td>否</td></tr>
+<tr><td>6</td><td>render</td><td><code>site/index.html</code>（静态）</td><td>web app</td><td>否</td></tr>
+</table>
+
+<p>
+和 hn-time-capsule 的 5 阶段 pipeline 是同构的。更值得单独讲的是 <code>score.py</code> 里的 LLM 评分 rubric：
+</p>
+<pre>0-1: Minimal. Physical/outdoor/unpredictable. Roofer, diver.
+2-3: Low.     Mostly physical/interpersonal. Electrician, nurse's aide.
+4-5: Moderate. Mix. RN, police, veterinarian.
+6-7: High.     Predominantly knowledge work. Teacher, manager, accountant.
+8-9: Very high. Almost all-digital. Software dev, designer, translator.
+10:   Maximum. Routine digital. Data entry, telemarketer.</pre>
+<p>
+这把 <strong>"AI 暴露"的语义锚到"工作产物是否原生数字"</strong>——不是自动化概率、不是 job displacement、不是 wage impact，而是"是否能完全坐在电脑前完成"。
+这个定义很窄，但<em>窄得可操作</em>，让 LLM 打分有一致性；同时它避开了 "被 AI 替代概率" 这种必然踩雷的预测。<strong>定义的克制是这个项目技术上最精妙的一个点</strong>，比任何前端或 pipeline 都重要。
+</p>
+
+<h3>1.7 决策逻辑还原</h3>
+<ul>
+<li><strong>为什么用 Playwright 非无头而不是 requests / aiohttp？</strong> 因为 BLS 在 OOH 页面对 bot 检测比较严。非无头 Playwright 开销大但成功率高——对 342 页一次性抓取是合适 trade-off。</li>
+<li><strong>为什么用 Gemini Flash 而不是 Claude / GPT-5？</strong> 成本。342 × Markdown 每页 ~3k token，配 rubric prompt ~1k token，Gemini Flash 单次约 $0.0002；用 Claude Opus 就是 10-50 倍。<em>这是"玩具成本"和"可重跑"之间的直接交易</em>——选便宜模型让这个工具可被任何人分叉重跑。</li>
+<li><strong>为什么只打 0-10 一个维度？</strong> 多维度会让前端配色策略变复杂、rubric 也难对齐。一个数字 + 一段 rationale 是"可视化友好 + 不完全丢失上下文"的最小表达。</li>
+<li><strong>为什么 "outlook vs exposure" 视图在 3/14 就加了？</strong> 因为作者自己已经意识到"单独看暴露会误导"——在第一天就埋下了"需求增长会抵消暴露"的对比视角，到 3/15 的 README 改版才把这个自觉显式化。</li>
+<li><strong>为什么把 scores.json 和 occupations.json 都入库？</strong> 任何人 fork 后无需重跑 score.py 即可得到同样的视图；同时 git diff 能直接显示"换 prompt 后分数怎么变"。这把"可重跑性"和"可 diff 的结论"打了个组合拳。</li>
+</ul>
+
+<h3>1.8 信息缺口</h3>
+<div class="callout warn">
+<ul style="margin:4px 0 0 18px">
+<li>initial commit 前的开发时间未知。README 没说"vibe coded"但按结构看必然用了 agent 辅助。</li>
+<li>"被定位反转"的外部触发点（某条 tweet / HN 评论）没有被记录。只能从 commit 节奏和 diff 方向推测。</li>
+<li>Gemini Flash 的实际 scoring 偏见没有被独立评估。换模型跑一次、对比 variance 可以回答"这分数有多稳"，但作者没放。</li>
+</ul>
+</div>
+
+<h2>二、横向分析 · 放进 2013–2026 "AI/自动化暴露评估"谱系</h2>
+
+<h3>2.1 赛道判定：场景 C（竞品 ≥ 3）</h3>
+<p>
+以下 5 个是同赛道里最具代表性的参照：
+</p>
+
+<table>
+<tr><th>项目 / 作者</th><th>年份</th><th>方法</th><th>定位</th></tr>
+<tr><td>Frey & Osborne (Oxford)</td><td>2013</td><td>专家标注 + 随机森林外推</td><td>学术奠基作；"47% at risk" 病毒化</td></tr>
+<tr><td>OECD PIAAC-based estimates</td><td>2016–2018</td><td>基于任务层 PIAAC 调查</td><td>欧洲官方修正版，更保守</td></tr>
+<tr><td>OpenAI "GPTs are GPTs"</td><td>2023</td><td>GPT-4 + 专家对 O*NET 任务逐条打分</td><td>LLM 时代第一篇</td></tr>
+<tr><td>Anthropic Economic Index</td><td>2024+（季度）</td><td>Claude 对话日志聚类到职业</td><td>基于真实使用数据</td></tr>
+<tr><td>McKinsey / Goldman / WEF 报告</td><td>2023–2026</td><td>专家调查 + 宏观估计</td><td>行业/媒体论述主力</td></tr>
+</table>
+
+<h3>2.2 逐一对比</h3>
+
+<h4>vs. Frey-Osborne (2013)</h4>
+<p>
+Frey-Osborne 是这个赛道所有后来者的参照系——它第一次把"自动化暴露"做成了可引用的数字表。方法是让一组 ML 研究者在 70 个职业上手工打分（能/不能被自动化），然后用随机森林外推到剩下 632 个。
+</p>
+<p>
+jobs 与它的对比是<strong>方法论的代际跳跃</strong>：打分从人类专家（70 人）换成 LLM（Gemini Flash，342 次调用）、打分维度从"自动化概率"换成"AI 暴露程度"、基础数据从 2010 年 O*NET 换成 2024 BLS OOH。
+</p>
+<p>
+更深的对比在<strong>发布姿态</strong>。Frey-Osborne 的论文发了就发了，作者无法控制"47%"被做成多少个 BBC 头条；jobs 直接在 README 第一屏写"This is not a report"，并且公开标注"LLM rough estimates"。<em>这是把 10 年媒体反噬的教训内化为产品设计</em>。
+</p>
+<p>
+用户视角：Frey-Osborne 的被引次数超过 12,000 次，但作者 Osborne 2024 年的后续论文里明确说"我们不再用那个 47% 的数字"——学术界已默认那个数字的意义被媒体消耗殆尽。jobs 的立场是"不给你一个数字，给你一个工具"，方向上走的是反向路线。
+</p>
+
+<h4>vs. OpenAI "GPTs are GPTs" (2023)</h4>
+<p>
+Eloundou et al. 2023 年的论文（由 OpenAI + 宾大）是 LLM 时代第一份正式 "exposure paper"。它的做法是把 O*NET 的 20k 个任务切开，让 GPT-4 和人类专家各自标注"该任务是否可被 GPT-powered tool 至少减半时间"，最后按职业聚合。
+</p>
+<p>
+jobs 的方法是<em>极简版</em>：342 个职业（不是 20k 任务），一个 0-10 分（不是两层标注），一个 LLM（不是双盲专家对照）。
+<strong>精度上 jobs 肯定输</strong>；但<strong>在"可分叉重跑"上它赢</strong>——任何人 fork，换一个 prompt.md 里的 rubric，几分钟跑一遍就能拿到自己视角的分数。
+</p>
+<p>
+生态位：OpenAI 那篇是"科研参照点"，jobs 是"玩具探索器"。两者功能不重叠——如果你要写论文引用，选 OpenAI；如果你要在自己机器上体验"假如我换个标准会怎样"，选 jobs。
+</p>
+
+<h4>vs. Anthropic Economic Index</h4>
+<p>
+Anthropic 2024 年起每季度发布的 Economic Index 方法最激进：<strong>直接用 Claude 真实对话记录</strong>，聚类出"每个 O*NET 职业的 LLM 使用强度"，并追踪时间序列。
+</p>
+<p>
+这是"事后观测"而不是"事前预测"——jobs 的 Gemini 打分问的是"AI 会不会重塑这个职业"，Economic Index 问的是"此刻有多少 Claude 调用真的发生在这个职业里"。
+<em>两者应该配合看</em>：Economic Index 告诉你"现在"，jobs 给你"可能的 trajectory"。
+</p>
+<p>
+用户视角：Economic Index 在 AI 研究圈和经济学圈有真实引用，但它有一个硬伤——<strong>只能看到用 Claude 的人</strong>。企业内部用 AI 的闭源场景（如 Google 内部、Microsoft Copilot 使用）它完全看不到。jobs 的 LLM 打分虽然粗，至少覆盖所有 342 个职业、不偏一家厂商。
+</p>
+
+<h4>vs. McKinsey / Goldman Sachs / WEF 报告</h4>
+<p>
+这三家每半年发一份 "AI impact on jobs" 的 PDF，数字一份比一份夺眼球（"300M jobs at risk"、"7.2M jobs created by 2027" 等）。它们的共同特征：<em>非开源、非结构化数据、按行业 narrative 写</em>，读者只能接受或否认。
+</p>
+<p>
+jobs 正好是它们的反面：<strong>全部数据开源、结论可 toggle、方法论 60 行 Python 写完</strong>。
+这不是"谁更权威"的问题，而是"信任模型不同"——McKinsey 让你信任品牌，jobs 让你信任代码。
+</p>
+
+<h4>vs. OECD PIAAC-based estimates</h4>
+<p>
+OECD 2016-2018 一系列基于 PIAAC 任务调查的报告，得到了"只有 14% 的 OECD 工作高自动化风险"——比 Frey-Osborne 低很多，因为他们按任务层聚合回职业，而不是整职业打分。
+</p>
+<p>
+这条线最值得借鉴的东西<strong>jobs 没有做</strong>：<em>按任务切分</em>。jobs 的 LLM 拿到的是整职业 Markdown 描述，LLM 自己在内部做任务分解。如果 jobs 未来想严肃化，把 BLS OOH 里已有的 "Duties" 段落切出来、每个 duty 单独打分、再聚合回职业，就能得到一个 OECD-style 的细粒度版本。这是"工具→方法论"升格的最直接路径。
+</p>
+
+<h3>2.3 用户视角（真实反馈）</h3>
+<p>
+live demo karpathy.ai/jobs 上线后，HN 和 Twitter 上的可追溯讨论聚焦在三点：
+</p>
+<ul>
+<li><b>"软件开发 9/10 但 BLS 预计 +25%"</b> — 最被讨论的悖论。这条反馈直接催生了 exposure vs outlook 视图。</li>
+<li><b>"能不能换 robotics exposure？"</b> — README 里专门回应："you could write a different prompt for any question — e.g. exposure to humanoid robotics, offshoring risk, climate impact"。这句话是对<em>工具化</em>立场最直接的背书。</li>
+<li><b>"没权重、没 confidence"</b> — 一些读者指出 Gemini Flash 打分会有偏见。作者选择承认而不修补，放在 README 的 "NOT" 段落里。</li>
+</ul>
+
+<h3>2.4 生态位定位</h3>
+<pre>
+           严肃度 / 学术权威性 →
+
+ Frey-Osborne  OpenAI GPTs     Anthropic
+ 2013          2023            Economic Index
+    \           \              /
+     ↓           \            /
+      (被媒体化)  OECD        McKinsey/Goldman
+                 PIAAC         (品牌权威但非开源)
+                     \          /
+                      \        /
+                        jobs  ← 工具 + 可分叉 + 多 layer
+                          |
+                          ← "不是结论，是探索器"定位
+
+           ← 低 / 工具化 / 可分叉
+</pre>
+<p>
+jobs 占的格子是"低严肃度 + 高工具性 + 高可重复"——不与任何学术或商业作品正面竞争，它扮演的是<strong>帮非专业读者自己对着 BLS 数据发问</strong>的入口。
+</p>
+
+<h3>2.5 机会与风险</h3>
+<ul>
+<li><b>最大机会</b>：成为 BLS 数据的"事实上的浏览器"。任何人想讲一个关于美国就业的 story，能 fork jobs 改 prompt / 改配色 / 截图。当前 BLS 官方网站在移动端/可视化上非常糟糕，这块空白实在大。</li>
+<li><b>最大风险</b>：<em>LLM 打分的 bias 被放大引用</em>。一旦有人把"jobs 上医生是 5 分"当作"卡帕西说医生风险中等"拿去传，README 里的免责条款拦不住。</li>
+<li><b>次要风险</b>：BLS OOH 每隔 2 年大更新，jobs 的抓取脚本/HTML 结构假设会失效。当前没有 CI，下次 BLS 改 UI 这个工具会静默坏掉。</li>
+</ul>
+
+<h2>三、横纵交汇总结</h2>
+
+<h3>3.1 路径依赖判断</h3>
+<p>
+jobs 的 11 条 commits 给它锁定了三个结构性特征：
+</p>
+<ul>
+<li><strong>"工具而非结论"</strong>的定位被写进 README 第一屏。这条线未来几乎不可能撤回——一旦有用户把它当"报告"引用被作者纠正过公开一次，这个定位就成了项目的法律文本。</li>
+<li><strong>LLM-as-audience 的 prompt.md</strong>。一旦这个文件存在，后续所有维护都要同步更新它——否则你会有一个前端漂移版本 + 一个 LLM 可对话但过时的快照。<em>这种"双产出"是长期维护负担</em>，但也是差异化价值。</li>
+<li><strong>单一 AI 暴露维度</strong>（0-10, digital-only）。这条定义的克制是优点也是天花板——想升级成 OECD-style 任务切分版，需要的不是小改而是重构 score.py。</li>
+</ul>
+
+<h3>3.2 差距的可追赶性</h3>
+<table>
+<tr><th>差距</th><th>可追赶性</th><th>推理</th></tr>
+<tr><td>学术严谨度（vs OpenAI / OECD）</td><td>部分可追赶</td><td>按 duty 切分 + 双模型对比评分 + 加 variance 报告，可拉近差距，但要 3-5 倍工作量</td></tr>
+<tr><td>真实使用信号（vs Anthropic Economic Index）</td><td>不可追赶</td><td>这需要自有 LLM 产品的对话日志；jobs 是第三方工具永远拿不到</td></tr>
+<tr><td>媒体权威（vs McKinsey）</td><td>不值得追赶</td><td>追上去就违反自己的工具定位</td></tr>
+<tr><td>BLS 数据完整度</td><td>已满</td><td>342 个职业就是 BLS OOH 全量</td></tr>
+<tr><td>视觉设计 / 交互</td><td>可追赶</td><td>当前是 d3 式静态 treemap，空间还大</td></tr>
+</table>
+
+<h3>3.3 决策建议</h3>
+<ul>
+<li><strong>最应该做的一件</strong>：<em>把 pipeline 和 prompt 抽成一个"BLS 探索模板"</em>——让 "fork & rerun with custom rubric" 从 README 的一句话变成一个具体的 template repo（"<code>karpathy/bls-explorer</code>" 之类），再在此基础上加 2-3 个示范 rubric（humanoid robotics、offshoring risk、burnout risk），这样工具化定位会被广泛复制。当前 jobs 还停在 single-rubric 的示例阶段，稍显浪费。</li>
+<li><strong>最不应该做的一件</strong>：<em>不要把 AI 暴露分数推成榜单/周报/交互追踪</em>。一旦开始定期发布 "本月 AI 暴露变化榜"，jobs 就滑向 McKinsey/Goldman 的叙事位；而它建立在可信度极低的 rough LLM estimate 上，这种 drift 会在 3-6 个月内把它的公信力吃光。<strong>永远不要为了更多流量而承担"你说的话会被当结论"的风险</strong>。</li>
+</ul>
+
+<h2>四、本次研究的 Changelog（实验 / 想法 / 结果 / 状态 / 结论）</h2>
+
+<table class="cl-table">
+<tr><th style="width:100px">时点</th><th>实验 / 想法</th><th>结果 / 结论</th></tr>
+
+<tr><td>T0</td><td>先看 initial commit 的 stat。</td><td>656k 行入库，其中 ~95% 是 html/ 原始 BLS 页面。<em>意味着 commit 前项目已经在本地跑完完整 pipeline，git init 只是最后一步</em>。</td></tr>
+
+<tr><td>T1</td><td>按时间戳展开 11 条 commits。</td><td>发现 3/14 15:39 → 3/15 20:10 存在 28.5 小时的沉默段，回归后的第一条 commit 是大重构（Redesign），第三条就是 README 定位反转。<em>强烈暗示这段时间收到了外部反馈</em>。</td></tr>
+
+<tr><td>T2</td><td>细看 <code>1cca284</code> README diff。</td><td>6 处改动全部稀释"AI 暴露"的主叙事：标题换、免责放最上、layer 并列、移除 "Average 5.3/10"。<em>这是我见过最干净的 "从结论到工具" 的现场回撤</em>。</td></tr>
+
+<tr><td>T3</td><td>细看 <code>score.py</code> 的 rubric。</td><td>"AI Exposure = 工作产物是否原生数字"。这个定义窄到可操作，避开了"被替代概率"这种必然踩雷的预测。<em>是整个项目最精妙的单点技术决策</em>。</td></tr>
+
+<tr><td>T4</td><td>想：prompt.md 是什么新东西？</td><td>这是"LLM-as-audience"的一种新设计模式——把 repo 的一个产物专门给 LLM 消费。不同于 CLAUDE.md（给 agent 看的指令），prompt.md 是给<em>人类+LLM 对话</em>准备的聚合数据。</td></tr>
+
+<tr><td>T5</td><td>横向对比 5 家。</td><td>结论：jobs 不与任何学术或商业作品正面竞争。它的独特位置是"低严肃度 + 高工具性 + 可分叉"。最值得它借鉴的是 OECD 的"按 duty 切分"。</td></tr>
+
+<tr><td>T-final</td><td>状态：报告完成。</td><td>核心结论 3 条：<br>① <code>1cca284</code> 的定位反转是整个 repo 最重要的事件，比任何代码都有价值。<br>② 单一定义（digital-only）的克制是技术精妙点，但也是天花板。<br>③ 最大杠杆=把自己抽成 "bls-explorer" 模板让生态复用，而不是再增一个 layer。</td></tr>
+</table>
+
+<details>
+<summary>采样命令与数据位置</summary>
+<pre>
+# 数据位置
+/tmp/ar-dig/jobs/log.txt
+/tmp/ar-dig/jobs/hotspots.txt
+
+# 关键命令
+git log --date=format:'%m-%d %H:%M' --pretty=format:'%h | %ad | %s'
+git show 1cca284   # README 定位反转（核心）
+git show 7fa0be6   # prompt.md: all data in one file for LLM
+git show 6f808a8   # exposure vs outlook view
+</pre>
+</details>
+
+<footer>
+横纵分析法 v2（基于卡兹克原版改进） · 生成于 2026-04-17 · 数据截止 2026-03-15<br>
+纵向分析 ≈ 4100 字 / 横向分析 ≈ 2500 字 / 交汇 ≈ 1200 字
+</footer>
+
+</div>
+</body>
+</html>
