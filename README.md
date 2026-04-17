@@ -89,12 +89,19 @@ autoresearch round 1（Claude 2 days autonomous on d12，`6ed7d1d`）和 round 2
   - **E.** 思维模式目录（12 条命名 pattern）— Shadow-drive→Public-drop / Single-dial Scaling / Explicit Over Magic …
   - **F.** 可验证的未来预测
 
-- [`reports/`](reports/) — 4 份独立 HTML 深度报告（每份按"横纵分析法"结构）
-  - [`autoresearch.html`](reports/autoresearch.html) · 35K · 约 8.2K 字
-  - [`hn-time-capsule.html`](reports/hn-time-capsule.html) · 27K · 约 7.2K 字
-  - [`jobs.html`](reports/jobs.html) · 31K · 约 7.8K 字
-  - [`nanochat.html`](reports/nanochat.html) · 45K · 约 13.6K 字
-  - 每份报告含 **0. 研究计划 / 1. 纵向（时间叙事）/ 2. 横向（竞品对比）/ 3. 横纵交汇 / 4. Changelog**
+- [`reports/`](reports/) — 4 份独立 HTML + ipynb 深度报告（每份按"横纵分析法"结构）
+  - [`autoresearch.html`](reports/autoresearch.html) + [`.ipynb`](reports/autoresearch.ipynb) · 35K · 约 8.2K 字
+  - [`hn-time-capsule.html`](reports/hn-time-capsule.html) + [`.ipynb`](reports/hn-time-capsule.ipynb) · 27K · 约 7.2K 字
+  - [`jobs.html`](reports/jobs.html) + [`.ipynb`](reports/jobs.ipynb) · 31K · 约 7.8K 字
+  - [`nanochat.html`](reports/nanochat.html) + [`.ipynb`](reports/nanochat.ipynb) · 45K · 约 13.6K 字
+  - HTML 含 **0. 研究计划 / 1. 纵向（时间叙事）/ 2. 横向（竞品对比）/ 3. 横纵交汇 / 4. Changelog**
+  - ipynb 是**可运行的证据**——clone 对应 repo 后跑一下，每条论断都能当场验证
+
+- [`skills/`](skills/) — 可复用的 agent skill 文件
+  - [`iterative-experiment.md`](skills/iterative-experiment.md) — 把 autoresearch `program.md` + nanochat `dev/LOG.md` 提炼成**通用"agent 过夜迭代实验"skill**，可直接放到你自己 repo 的根目录作为 `program.md`
+
+- [`PLAYBOOK.md`](PLAYBOOK.md) — **实战手册**：如果你要做类似的工程/AI 实验项目，每条建议都带 commit 证据
+  - 四条基本宪法 + 启动/写代码/AI 实验/commit 实践/agent 协作/发布/反 pattern 警示 + 一页纸 checklist
 
 - [`CHANGELOG.md`](CHANGELOG.md) — 研究过程的步骤 / 想法 / 结果 / 结论，便于回溯判断路径
 
@@ -104,7 +111,9 @@ autoresearch round 1（Claude 2 days autonomous on d12，`6ed7d1d`）和 round 2
 
 - 想快速了解作者思维 → 先读 `CONCLUSIONS.md`
 - 想学习可直接挪用的 pattern → 读 `INSIGHTS.md` 的 D + E 章
-- 想深入某个 repo → 在浏览器打开 `reports/<repo>.html`
+- 想深入某个 repo → 在浏览器打开 `reports/<repo>.html`，跑 `reports/<repo>.ipynb` 验证
+- **想自己做类似项目 → 读 `PLAYBOOK.md`**
+- **想让 agent 帮你跑实验 → 把 `skills/iterative-experiment.md` 放进你的 repo 当 `program.md`**
 - 想看我们是如何做这件事的 → `CHANGELOG.md`
 
 ## 方法论
